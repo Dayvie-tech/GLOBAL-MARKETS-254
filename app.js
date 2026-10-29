@@ -24,7 +24,7 @@
       if(error) throw error;
       if(data.user && data.session){ await ensureProfile(data.user,full_name,phone,referralCode); await refresh(); msg('registerMsg','Account created. Your registration payment must be submitted and manually approved before campaign access.'); }
       else msg('registerMsg','Check your email to confirm your account, then sign in. Your profile will be created after confirmation.');
-      e.currentTarget.reset();
+      document.querySelector('#registerForm').reset();
     } catch(err){msg('registerMsg',err.message||'Registration failed.',true);}
   });
   $('#loginForm').addEventListener('submit', async e => {
