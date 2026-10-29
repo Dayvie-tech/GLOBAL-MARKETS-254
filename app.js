@@ -20,7 +20,7 @@
     const f=new FormData(e.currentTarget), full_name=String(f.get('full_name')).trim(), phone=String(f.get('phone')).trim(), email=String(f.get('email')).trim().toLowerCase(), password=String(f.get('password')), referralCode=String(f.get('referral_code')||'').trim();
     msg('registerMsg','Creating your account…');
     try {
-      const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name,phone,referral_code:referralCode},emailRedirectTo:location.origin+location.pathname}});
+      const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name,phone,referral_code:referralCode},emailredirectTo:'https://dayvie-tech.github.io/GLOBAL-MARKETS-254/'}});
       if(error) throw error;
       if(data.user && data.session){ await ensureProfile(data.user,full_name,phone,referralCode); await refresh(); msg('registerMsg','Account created. Your registration payment must be submitted and manually approved before campaign access.'); }
       else msg('registerMsg','Check your email to confirm your account, then sign in. Your profile will be created after confirmation.');
