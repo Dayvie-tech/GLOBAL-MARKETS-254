@@ -141,3 +141,5 @@ footer{padding-top:45px}
  .workspace-switcher{width:100%}
  .workspace-switch{flex:1;padding:11px 8px}
 }
+
+.campaign-empty{padding:22px;border:1px dashed #6c5624;border-radius:12px;background:#15120b}.campaign-empty strong{color:var(--gold2);font:700 16px Manrope}.campaign-empty p{max-width:620px;line-height:1.75;color:var(--muted)}.page-content .page-actions .btn{display:inline-flex;align-items:center}
