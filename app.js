@@ -170,7 +170,7 @@
       $$('[data-admin-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.adminModule!==target));
       $('#adminArea').scrollIntoView({behavior:'smooth',block:'start'});
     }));
-    $('[data-campaign-delete]').forEach(b=>b.onclick=async()=>{
+    $$('[data-campaign-delete]').forEach(b=>b.onclick=async()=>{
       const id=b.dataset.campaignDelete,mediaPath=b.dataset.mediaPath;
       if(!confirm('Delete this campaign? If members have assignments or submissions, it will be archived instead so review and payment history are preserved.'))return;
       b.disabled=true;b.textContent='Processing…';
@@ -195,7 +195,7 @@
         $('#adminArea [data-admin-tab="campaigns"]')?.click();
       }catch(err){toast('Campaign could not be deleted: '+(err.message||'Please try again.'));b.disabled=false;b.textContent='Delete campaign';}
     });
-    $('[data-user-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('profiles').update({status:b.dataset.userAction}).eq('id',b.dataset.id);if(error)toast(error.message);else{toast('Account status updated.');await renderDashboard();}});
+    $$('[data-user-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('profiles').update({status:b.dataset.userAction}).eq('id',b.dataset.id);if(error)toast(error.message);else{toast('Account status updated.');await renderDashboard();}});
     $$('[data-payment-evidence]').forEach(b=>b.onclick=async()=>{const {data,error}=await client.storage.from('payment-evidence').createSignedUrl(b.dataset.paymentEvidence,300);if(error){toast(error.message);return;}window.open(data.signedUrl,'_blank','noopener');});
     $$('[data-payment-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('payments').update({status:b.dataset.paymentAction,verified_by:currentUser.id,verified_at:new Date().toISOString()}).eq('id',b.dataset.id);if(error){toast(error.message);return;}if(b.dataset.paymentAction==='approved'){const {error:e2}=await client.from('profiles').update({status:'active'}).eq('id',b.dataset.user);if(e2)toast('Payment approved but account status update failed: '+e2.message);}toast('Payment review saved.');await renderDashboard();});
     $$('[data-sub-action]').forEach(b=>b.onclick=async()=>{const id=b.dataset.id;const approved=Number($(`[data-approved-for="${id}"]`)?.value||0);const {error}=await client.from('submissions').update({status:b.dataset.subAction,approved_views:b.dataset.subAction==='approved'?approved:0,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',id);if(error)toast(error.message);else{toast('Submission review saved.');await renderDashboard();}});
