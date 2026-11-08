@@ -260,8 +260,8 @@ footer{padding-top:45px}
 
 /* GMA install prompt */
 #installApp[hidden]{display:none!important}
-#installApp{margin-left:6px}
-@media(max-width:900px){#installApp{margin:8px 0 0}}
+#installApp{margin-left:auto;flex:0 0 auto;white-space:nowrap}
+@media(max-width:900px){#installApp{margin:0 0 0 auto}}
 
 
 /* GMA PWA mobile workspace — compact app chrome and touch-first module navigation */
@@ -338,3 +338,7 @@ body.gma-authenticated .admin-module{animation:gmaPanelIn .18s ease-out}
 .install-app-cta:hover{background:#d9b34b18;transform:translateY(-1px)}
 #installApp[hidden],#installAppHero[hidden]{display:none!important}
 @media(max-width:700px){.install-app-cta{width:100%;justify-content:center;min-height:48px}.hero .actions{flex-wrap:wrap}}
+
+/* Keep the install action accessible after sign-in, when public navigation is collapsed */
+body.gma-authenticated #installApp{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 13px;border-color:var(--gold);color:var(--gold2);font-size:11px}
+body.gma-authenticated #installApp[hidden]{display:none!important}
