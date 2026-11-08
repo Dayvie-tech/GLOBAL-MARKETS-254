@@ -35,7 +35,6 @@
     <button class="btn ghost small" type="button" id="refreshPublicStats">↻ Refresh figures</button>
   </div>
   <div class="public-stat-grid" aria-live="polite">
-    <article class="public-stat-card"><span class="public-stat-icon">♙</span><small>ACTIVE ADVERTISERS</small><strong id="publicActiveAdvertisers">—</strong><span>Approved active accounts</span></article>
     <article class="public-stat-card"><span class="public-stat-icon">◈</span><small>CAMPAIGNS PUBLISHED</small><strong id="publicTotalCampaigns">—</strong><span>Campaign records on GMA</span></article>
     <article class="public-stat-card"><span class="public-stat-icon">◎</span><small>LIVE CAMPAIGNS</small><strong id="publicActiveCampaigns">—</strong><span>Campaigns enabled by an administrator</span></article>
     <article class="public-stat-card"><span class="public-stat-icon">✓</span><small>APPROVED SUBMISSIONS</small><strong id="publicApprovedSubmissions">—</strong><span>Proofs reviewed and approved</span></article>
@@ -69,8 +68,8 @@ primaryNav.querySelectorAll('a,button').forEach(link=>link.addEventListener('cli
 <script src="config.js"></script>
 <script>
 (async function loadPublicGmaStats(){
-  const ids={active_advertisers:'publicActiveAdvertisers',total_campaigns:'publicTotalCampaigns',active_campaigns:'publicActiveCampaigns',approved_submissions:'publicApprovedSubmissions'};
-  const labels={active_advertisers:'Active advertisers',total_campaigns:'Campaigns published',active_campaigns:'Campaigns marked active',approved_submissions:'Approved submissions'};
+  const ids={total_campaigns:'publicTotalCampaigns',active_campaigns:'publicActiveCampaigns',approved_submissions:'publicApprovedSubmissions'};
+  const labels={total_campaigns:'Campaigns published',active_campaigns:'Campaigns marked active',approved_submissions:'Approved submissions'};
   const status=document.getElementById('publicStatsStatus'),bars=document.getElementById('publicStatsBars'),refresh=document.getElementById('refreshPublicStats');
   const format=value=>Number(value||0).toLocaleString('en-KE');
   async function load(){
@@ -78,7 +77,7 @@ primaryNav.querySelectorAll('a,button').forEach(link=>link.addEventListener('cli
     refresh.disabled=true;status.textContent='Refreshing live platform figures…';
     try{
       const client=window.supabase.createClient(window.GMA_CONFIG.supabaseUrl,window.GMA_CONFIG.supabaseAnonKey);
-      const {data,error}=await client.from('gma_public_stats').select('active_advertisers,total_campaigns,active_campaigns,approved_submissions,updated_at').eq('id',1).single();
+      const {data,error}=await client.from('gma_public_stats').select('total_campaigns,active_campaigns,approved_submissions,updated_at').eq('id',1).single();
       if(error)throw error;
       if(!data||typeof data!=='object')throw new Error('No statistics returned.');
       Object.entries(ids).forEach(([key,id])=>{const el=document.getElementById(id);if(el)el.textContent=format(data[key]);});
@@ -91,5 +90,5 @@ primaryNav.querySelectorAll('a,button').forEach(link=>link.addEventListener('cli
   refresh?.addEventListener('click',load);load();
 })();
 </script>
-<script src="app.js?v=20261108-public-analytics-1"></script>
+<script src="app.js?v=20261108-member-privacy-1"></script>
 </body></html>
