@@ -62,7 +62,7 @@
   async function renderDashboard(){
     const [payments,campaigns,subs,withdrawals,refs,notifications]=await Promise.all([
       rows('payments',q=>q.eq('user_id',currentUser.id).order('created_at',{ascending:false})),
-      rows('campaigns',q=>q.eq('active',true).order('created_at',{ascending:false})),
+      rows('campaigns',q=>q.eq('active',true).lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false})),
       rows('submissions',q=>q.eq('user_id',currentUser.id).order('created_at',{ascending:false})),
       rows('withdrawals',q=>q.eq('user_id',currentUser.id).order('created_at',{ascending:false})),
       rows('referrals',q=>q.eq('referrer_id',currentUser.id).order('created_at',{ascending:false})),
