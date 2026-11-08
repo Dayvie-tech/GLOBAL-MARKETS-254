@@ -247,3 +247,13 @@ footer{padding-top:45px}
  .stats{grid-template-columns:1fr 1fr}
  .member-nav-item,.admin-nav-item{font-size:9px}
 }
+
+/* Prominent admin payment-review shortcut */
+.admin-payment-shortcut{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 18px;padding:20px 23px;border:1px solid #806522;border-radius:15px;background:linear-gradient(110deg,#211b0d,#12110d 72%);box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.admin-payment-shortcut>div{display:grid;gap:3px}
+.admin-payment-shortcut .eyebrow{margin:0;font-size:9px}
+.admin-payment-shortcut strong{font:800 20px Manrope,sans-serif;color:#fff}
+.admin-payment-shortcut small{font-size:12px;color:var(--muted)}
+.admin-payment-shortcut .btn{white-space:nowrap}
+.nav-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--gold);color:#100e08;font-size:10px;margin-left:5px}
+@media(max-width:600px){.admin-payment-shortcut{align-items:flex-start;flex-direction:column;padding:17px}.admin-payment-shortcut .btn{width:100%}}
