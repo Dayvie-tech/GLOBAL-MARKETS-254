@@ -152,10 +152,31 @@
       ['Pending withdrawals',withdrawals.filter(x=>x.status==='pending').length],
       ['Referral reviews',refs.filter(x=>!x.eligible).length]
     ].map(x=>'<div class="admin-metric"><span>'+safe(x[0])+'</span><strong>'+safe(x[1])+'</strong></div>').join('')+'</div>';
+    const analyticsRangeDays=days=>days==='all'?null:Number(days||30);
+    const analyticsPanel=(range='30')=>{
+      const days=analyticsRangeDays(range),now=Date.now(),cutoff=days?now-days*86400000:0,previousCutoff=days?cutoff-days*86400000:0;
+      const inRange=x=>new Date(x.created_at).getTime()>=cutoff;
+      const inPrevious=x=>days&&new Date(x.created_at).getTime()>=previousCutoff&&new Date(x.created_at).getTime()<cutoff;
+      const recentUsers=users.filter(inRange),recentSubs=subs.filter(inRange),recentPayments=payments.filter(inRange),recentWithdrawals=withdrawals.filter(inRange),recentRefs=refs.filter(inRange),recentCampaigns=campaigns.filter(inRange);
+      const approvedPayments=recentPayments.filter(x=>x.status==='approved');
+      const paidOut=recentWithdrawals.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.amount||0),0);
+      const revenue=approvedPayments.reduce((n,x)=>n+Number(x.amount||0),0);
+      const approved=recentSubs.filter(x=>x.status==='approved').length;
+      const previousSubs=subs.filter(inPrevious).length,previousUsers=users.filter(inPrevious).length;
+      const comparison=(current,previous)=>!days?'All-time':previous?((current-previous)>0?'+':'')+Math.round((current-previous)/previous*100)+'% vs previous period':current?'New activity':'No activity';
+      const campaignRows=campaigns.map(c=>{const cs=recentSubs.filter(s=>s.campaign_id===c.id);return {title:c.title,total:cs.length,approved:cs.filter(s=>s.status==='approved').length,pending:cs.filter(s=>s.status==='pending').length};}).filter(x=>x.total).sort((a,b)=>b.total-a.total).slice(0,6);
+      const trendDays=7,trend=Array.from({length:trendDays},(_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(trendDays-1-i));const next=new Date(d);next.setDate(next.getDate()+1);return {label:d.toLocaleDateString('en-KE',{weekday:'short'}),members:users.filter(x=>new Date(x.created_at)>=d&&new Date(x.created_at)<next).length,proofs:subs.filter(x=>new Date(x.created_at)>=d&&new Date(x.created_at)<next).length};});
+      const maxTrend=Math.max(1,...trend.flatMap(x=>[x.members,x.proofs]));
+      return '<div class="analytics-toolbar"><label>Reporting period <select id="analyticsRange"><option value="7" '+(range==='7'?'selected':'')+'>Last 7 days</option><option value="30" '+(range==='30'?'selected':'')+'>Last 30 days</option><option value="90" '+(range==='90'?'selected':'')+'>Last 90 days</option><option value="all" '+(range==='all'?'selected':'')+'>All time</option></select></label><button class="btn small" type="button" id="analyticsExport">Export report CSV</button></div>'+
+      '<div class="admin-overview-grid analytics-kpis">'+[['New members',recentUsers.length,comparison(recentUsers.length,previousUsers)],['Active members',users.filter(x=>x.role!=='admin'&&x.status==='active').length,'Current total'],['Campaigns created',recentCampaigns.length,'Selected period'],['Proof submissions',recentSubs.length,comparison(recentSubs.length,previousSubs)],['Approved proofs',approved,'Selected period'],['Confirmed revenue',money(revenue),'Approved payments'],['Paid withdrawals',money(paidOut),'Marked paid'],['Eligible referral bonuses',money(recentRefs.filter(x=>x.eligible).reduce((n,x)=>n+Number(x.bonus||0),0)),'Selected period']].map(x=>'<div class="admin-metric"><span>'+safe(x[0])+'</span><strong>'+safe(x[1])+'</strong><small>'+safe(x[2])+'</small></div>').join('')+'</div>'+
+      '<div class="analytics-grid"><div class="analytics-card"><h4>Activity trend · last 7 days</h4><div class="analytics-bars">'+trend.map(x=>'<div class="analytics-bar-group"><div class="analytics-bar-pair"><i title="'+x.members+' new members" style="height:'+Math.max(3,x.members/maxTrend*100)+'%"></i><i class="proof-bar" title="'+x.proofs+' proof submissions" style="height:'+Math.max(3,x.proofs/maxTrend*100)+'%"></i></div><small>'+safe(x.label)+'</small></div>').join('')+'</div><p class="analytics-legend"><span>Members</span><span>Proof submissions</span></p></div><div class="analytics-card"><h4>Campaign performance</h4>'+(campaignRows.length?'<div class="data-list">'+campaignRows.map(x=>'<div class="data-item"><strong>'+safe(x.title)+'</strong><small>'+x.total+' submissions · '+x.approved+' approved · '+x.pending+' pending</small></div>').join('')+'</div>':'<p class="empty">No campaign submissions in this period.</p>')+'</div></div>'+
+      '<p class="muted analytics-note">Figures are calculated from current Supabase records. Revenue counts approved registration payments only; payout totals count withdrawals marked paid. Screenshot submissions are not treated as verified view counts.</p>';
+    };
     const adminModules=[
       {id:'overview',label:'Overview',icon:'▦',html:card('Operations snapshot',adminStats+'<p class="muted">Use the sections on the left to manage the GMA platform. All approvals and account changes remain subject to database permissions.</p>')},
       {id:'members',label:'Member Management',icon:'♙',html:card('Advertisers ('+users.length+')',userCards)},
       {id:'payments',label:'Payment Verification',icon:'₭',html:card('Payment verification ('+payments.length+')',paymentCards)},
+      {id:'analytics',label:'Analytics',icon:'▤',html:card('Platform performance',analyticsPanel())},
       {id:'campaigns',label:'Campaign Manager',icon:'◈',html:card('Create and manage campaigns',campaignForm+campaignCards)},
       {id:'proofs',label:'Submission & Proof Review',icon:'✓',html:card('Proof review ('+subs.length+')',subCards)},
       {id:'referrals',label:'Referral Management',icon:'↗',html:card('Referral reviews ('+refs.length+')',referralCards)},
@@ -170,7 +191,10 @@
       $$('[data-admin-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.adminModule!==target));
       $('#adminArea').scrollIntoView({behavior:'smooth',block:'start'});
     }));
-    $$('[data-campaign-delete]').forEach(b=>b.onclick=async()=>{
+    $('#analyticsRange')?.addEventListener('change',e=>{const section=$('[data-admin-module="analytics"]');const target=section?.querySelector('.dashboard-grid');if(target)target.innerHTML=card('Platform performance',analyticsPanel(e.target.value));bindAnalytics();});
+    const bindAnalytics=()=>{$('#analyticsRange')?.addEventListener('change',e=>{const section=$('[data-admin-module="analytics"]');const target=section?.querySelector('.dashboard-grid');if(target)target.innerHTML=card('Platform performance',analyticsPanel(e.target.value));bindAnalytics();});$('#analyticsExport')?.addEventListener('click',()=>{const days=analyticsRangeDays($('#analyticsRange')?.value||'30'),cutoff=days?Date.now()-days*86400000:0,records=[['Category','Date','Record','Status','Amount KSh']];const add=(kind,items,label,statusField,amountField)=>items.filter(x=>new Date(x.created_at).getTime()>=cutoff).forEach(x=>records.push([kind,new Date(x.created_at).toISOString(),label(x),statusField?x[statusField]:'',amountField?Number(x[amountField]||0):'']));add('Member',users,x=>x.full_name,'status');add('Campaign',campaigns,x=>x.title,'active');add('Payment',payments,x=>x.payment_reference,'status','amount');add('Submission',subs,x=>x.campaign_id,'status','approved_views');add('Withdrawal',withdrawals,x=>x.method+' · '+x.destination,'status','amount');add('Referral',refs,x=>x.referred_user_id,'eligible','bonus');const csv=records.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='gma-analytics-report.csv';a.click();URL.revokeObjectURL(url);});};
+    bindAnalytics();
+    $('[data-campaign-delete]').forEach(b=>b.onclick=async()=>{
       const id=b.dataset.campaignDelete,mediaPath=b.dataset.mediaPath;
       if(!confirm('Delete this campaign? If members have assignments or submissions, it will be archived instead so review and payment history are preserved.'))return;
       b.disabled=true;b.textContent='Processing…';
