@@ -14,6 +14,7 @@
   const needConfig = () => { if(!client){toast('Backend not configured yet. Follow README.md to connect Supabase.');return false;}return true; };
   const setAuthVisibility = (authenticated) => {
     document.body.classList.toggle('gma-authenticated', authenticated);
+    if (typeof gmaSetInstallVisible === 'function' && typeof gmaIsStandalone === 'function') gmaSetInstallVisible(authenticated && !gmaIsStandalone() || !!gmaInstallPrompt);
     $('#auth').classList.toggle('hidden', authenticated);
     $('#navLogin').classList.toggle('hidden', authenticated);
     $('#navRegister').classList.toggle('hidden', authenticated);
