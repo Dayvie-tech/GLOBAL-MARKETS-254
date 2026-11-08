@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "Global Marketing Agency",
+  "short_name": "GMA",
+  "description": "Global Marketing Agency campaign and advertiser workspace.",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {"src": "./icons/gma-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
