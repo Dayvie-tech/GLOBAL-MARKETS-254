@@ -126,9 +126,11 @@ footer{padding-top:45px}
 .member-nav,.admin-nav{position:sticky;top:92px;z-index:12;max-height:calc(100vh - 112px);overflow-y:auto;overscroll-behavior:contain}
 .member-shell,.admin-shell{scroll-margin-top:100px}
 .member-module,.admin-module{scroll-margin-top:100px}
-.workspace-switcher{display:flex;gap:8px;align-items:center;margin:0 0 22px;padding:7px;background:#111;border:1px solid var(--line);border-radius:12px;width:max-content;max-width:100%}
-.workspace-switch{border:1px solid transparent;border-radius:8px;padding:11px 18px;background:transparent;color:var(--muted);font:700 12px 'DM Sans',sans-serif;cursor:pointer}
-.workspace-switch:hover,.workspace-switch.active{background:#211b0c;border-color:#6c5624;color:var(--gold2)}
+.workspace-switcher{display:flex;gap:14px;align-items:center;justify-content:space-between;margin:0 0 22px;padding:10px 12px;background:#111;border:1px solid var(--line);border-radius:12px;width:max-content;max-width:100%}
+.workspace-switch-label{font:700 10px 'DM Sans',sans-serif;letter-spacing:1.5px;color:var(--muted)}
+.workspace-switch-toggle{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid #80672d;border-radius:9px;padding:11px 17px;background:linear-gradient(135deg,#2a220f,#17130a);color:var(--gold2);font:700 12px 'DM Sans',sans-serif;cursor:pointer;transition:transform .18s ease,border-color .18s ease}
+.workspace-switch-toggle:hover{border-color:var(--gold2);transform:translateY(-1px)}
+.workspace-switch-toggle:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
 #adminArea{scroll-margin-top:100px}
 @media(max-width:850px){
  .member-shell,.admin-shell{grid-template-columns:minmax(0,1fr)}
@@ -139,7 +141,7 @@ footer{padding-top:45px}
 }
 @media(max-width:480px){
  .workspace-switcher{width:100%}
- .workspace-switch{flex:1;padding:11px 8px}
+ .workspace-switch-toggle{flex:1;padding:11px 8px}
 }
 
 .campaign-empty{padding:22px;border:1px dashed #6c5624;border-radius:12px;background:#15120b}.campaign-empty strong{color:var(--gold2);font:700 16px Manrope}.campaign-empty p{max-width:620px;line-height:1.75;color:var(--muted)}.page-content .page-actions .btn{display:inline-flex;align-items:center}
