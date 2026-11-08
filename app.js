@@ -139,7 +139,7 @@
     const userCards=list(users,u=>item(u.full_name,`${u.email} · ${u.phone} · ${new Date(u.created_at).toLocaleDateString()}`,u.status,`<div class="row-actions">${u.role!=='admin'&&u.status!=='active'?`<button class="btn small" data-user-action="active" data-id="${u.id}">Activate</button>`:''}${u.role!=='admin'&&u.status!=='suspended'?`<button class="btn small ghost" data-user-action="suspended" data-id="${u.id}">Suspend</button>`:''}</div>`));
     const paymentCards=list(payments,p=>{const u=users.find(x=>x.id===p.user_id);return item(`${money(p.amount)} · ${u?.full_name||p.user_id}`,`Ref ${p.payment_reference} · ${new Date(p.created_at).toLocaleString()}`,p.status,`<div class="row-actions">${p.evidence_path?`<button class="btn small" data-payment-evidence="${safe(p.evidence_path)}">View payment evidence</button>`:'<span class="muted">No evidence attached</span>'}${p.status==='pending'?`<button class="btn small" data-payment-action="approved" data-id="${p.id}" data-user="${p.user_id}">Approve payment</button><button class="btn small ghost" data-payment-action="rejected" data-id="${p.id}">Reject</button>`:''}</div>`)});
     const subCards=list(subs,s=>{const u=users.find(x=>x.id===s.user_id);return item(`${u?.full_name||s.user_id} · claimed ${s.claimed_views}`,`Campaign ${s.campaign_id} · ${new Date(s.created_at).toLocaleString()}`,s.status,`<div class="row-actions"><button class="btn small" data-proof="${s.id}" data-path="${safe(s.screenshot_path)}">View proof</button>${s.status==='pending'?`<input class="approved-input" data-approved-for="${s.id}" type="number" min="0" max="10000000" value="${s.claimed_views}" aria-label="Approved views"><button class="btn small" data-sub-action="approved" data-id="${s.id}">Approve views</button><button class="btn small ghost" data-sub-action="rejected" data-id="${s.id}">Reject</button>`:''}</div>`)});
-    const campaignCards=list(campaigns,c=>item(c.title,`${money(c.rate_per_view)} per approved view · ${c.expires_at?`expires ${new Date(c.expires_at).toLocaleString()}`:'no expiry set'}`,c.active?'active':'inactive'));
+    const campaignCards=list(campaigns,c=>item(c.title,`${money(c.rate_per_view)} per approved view · ${c.expires_at?`expires ${new Date(c.expires_at).toLocaleString()}`:'no expiry set'}`,c.active?'active':'inactive',`<div class="row-actions"><button class="btn small ghost" type="button" data-campaign-delete="${c.id}" data-media-path="${safe(c.media_path||'')}">Delete campaign</button></div>`));
     const withdrawalCards=list(withdrawals,w=>{const u=users.find(x=>x.id===w.user_id);return item(`${money(w.amount)} · ${u?.full_name||w.user_id}`,`${w.method} · ${w.destination}`,w.status,`<div class="row-actions">${w.status==='pending'?`<button class="btn small" data-withdraw-action="approved" data-id="${w.id}">Approve</button><button class="btn small ghost" data-withdraw-action="rejected" data-id="${w.id}">Reject</button>`:w.status==='approved'?`<button class="btn small" data-withdraw-action="paid" data-id="${w.id}">Mark paid</button>`:''}</div>`)});
     const referralCards=list(refs,r=>item(`Bonus ${money(r.bonus)}`,`Referrer ${r.referrer_id} · referred ${r.referred_user_id}`,r.eligible?'approved':'pending',`<div class="row-actions">${!r.eligible?`<button class="btn small" data-ref-action="approve" data-id="${r.id}">Approve referral</button>`:''}</div>`));
     const campaignForm=`<form id="campaignForm"><label>Campaign title<input name="title" required maxlength="140" placeholder="e.g. Product awareness campaign"></label><label>Campaign instructions<textarea name="description" rows="4" required placeholder="Explain where to post, what to say, restrictions and what evidence members must submit."></textarea></label><label>Rate per approved view (KSh)<input name="rate_per_view" type="number" min="0" step="0.01" value="50" required></label><label>Campaign media (JPG, PNG, WEBP or MP4 · max 10 MB)<input name="media" type="file" accept="image/png,image/jpeg,image/webp,video/mp4" required></label><button class="btn" type="submit">Create and publish 20-hour campaign</button><small>The campaign starts immediately and expires after 20 hours. Members see it only while it is live.</small></form>`;
@@ -170,7 +170,32 @@
       $$('[data-admin-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.adminModule!==target));
       $('#adminArea').scrollIntoView({behavior:'smooth',block:'start'});
     }));
-    $$('[data-user-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('profiles').update({status:b.dataset.userAction}).eq('id',b.dataset.id);if(error)toast(error.message);else{toast('Account status updated.');await renderDashboard();}});
+    $('[data-campaign-delete]').forEach(b=>b.onclick=async()=>{
+      const id=b.dataset.campaignDelete,mediaPath=b.dataset.mediaPath;
+      if(!confirm('Delete this campaign? If members have assignments or submissions, it will be archived instead so review and payment history are preserved.'))return;
+      b.disabled=true;b.textContent='Processing…';
+      try{
+        const [assignments,submissions]=await Promise.all([
+          client.from('campaign_assignments').select('id',{count:'exact',head:true}).eq('campaign_id',id),
+          client.from('submissions').select('id',{count:'exact',head:true}).eq('campaign_id',id)
+        ]);
+        if(assignments.error)throw assignments.error;
+        if(submissions.error)throw submissions.error;
+        if((assignments.count||0)>0||(submissions.count||0)>0){
+          const {error}=await client.from('campaigns').update({active:false}).eq('id',id);
+          if(error)throw error;
+          toast('Campaign archived. Existing member assignments and proof history were preserved.');
+        }else{
+          const {error}=await client.from('campaigns').delete().eq('id',id);
+          if(error)throw error;
+          if(mediaPath){const {error:storageError}=await client.storage.from('campaign-media').remove([mediaPath]);if(storageError)toast('Campaign deleted, but its media file could not be removed: '+storageError.message);}
+          toast('Campaign deleted successfully.');
+        }
+        await renderDashboard();
+        $('#adminArea [data-admin-tab="campaigns"]')?.click();
+      }catch(err){toast('Campaign could not be deleted: '+(err.message||'Please try again.'));b.disabled=false;b.textContent='Delete campaign';}
+    });
+    $('[data-user-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('profiles').update({status:b.dataset.userAction}).eq('id',b.dataset.id);if(error)toast(error.message);else{toast('Account status updated.');await renderDashboard();}});
     $$('[data-payment-evidence]').forEach(b=>b.onclick=async()=>{const {data,error}=await client.storage.from('payment-evidence').createSignedUrl(b.dataset.paymentEvidence,300);if(error){toast(error.message);return;}window.open(data.signedUrl,'_blank','noopener');});
     $$('[data-payment-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('payments').update({status:b.dataset.paymentAction,verified_by:currentUser.id,verified_at:new Date().toISOString()}).eq('id',b.dataset.id);if(error){toast(error.message);return;}if(b.dataset.paymentAction==='approved'){const {error:e2}=await client.from('profiles').update({status:'active'}).eq('id',b.dataset.user);if(e2)toast('Payment approved but account status update failed: '+e2.message);}toast('Payment review saved.');await renderDashboard();});
     $$('[data-sub-action]').forEach(b=>b.onclick=async()=>{const id=b.dataset.id;const approved=Number($(`[data-approved-for="${id}"]`)?.value||0);const {error}=await client.from('submissions').update({status:b.dataset.subAction,approved_views:b.dataset.subAction==='approved'?approved:0,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',id);if(error)toast(error.message);else{toast('Submission review saved.');await renderDashboard();}});
