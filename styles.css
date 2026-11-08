@@ -121,3 +121,23 @@ footer{padding-top:45px}
  .trust-strip div{gap:8px}
  .trust-strip span{font-size:10px}
 }
+
+/* Workspace panel navigation: keep module switching available while viewing long forms */
+.member-nav,.admin-nav{position:sticky;top:92px;z-index:12;max-height:calc(100vh - 112px);overflow-y:auto;overscroll-behavior:contain}
+.member-shell,.admin-shell{scroll-margin-top:100px}
+.member-module,.admin-module{scroll-margin-top:100px}
+.workspace-switcher{display:flex;gap:8px;align-items:center;margin:0 0 22px;padding:7px;background:#111;border:1px solid var(--line);border-radius:12px;width:max-content;max-width:100%}
+.workspace-switch{border:1px solid transparent;border-radius:8px;padding:11px 18px;background:transparent;color:var(--muted);font:700 12px 'DM Sans',sans-serif;cursor:pointer}
+.workspace-switch:hover,.workspace-switch.active{background:#211b0c;border-color:#6c5624;color:var(--gold2)}
+#adminArea{scroll-margin-top:100px}
+@media(max-width:850px){
+ .member-shell,.admin-shell{grid-template-columns:minmax(0,1fr)}
+ .member-nav,.admin-nav{top:72px;max-height:none;display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:7px;padding:8px;white-space:nowrap;scrollbar-width:thin;background:#101010}
+ .member-nav-item,.admin-nav-item{flex:0 0 auto;width:auto;min-width:max-content;padding:10px 13px}
+ .member-nav-item span,.admin-nav-item span{width:auto}
+ .member-workspace,.admin-workspace{min-width:0}
+}
+@media(max-width:480px){
+ .workspace-switcher{width:100%}
+ .workspace-switch{flex:1;padding:11px 8px}
+}
