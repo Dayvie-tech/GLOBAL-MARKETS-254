@@ -13,6 +13,7 @@
   const msg = (id, text, bad=false) => { const el=$('#'+id); if(el){el.textContent=text;el.style.color=bad?'var(--red)':'var(--gold2)';} };
   const needConfig = () => { if(!client){toast('Backend not configured yet. Follow README.md to connect Supabase.');return false;}return true; };
   const setAuthVisibility = (authenticated) => {
+    document.body.classList.toggle('gma-authenticated', authenticated);
     $('#auth').classList.toggle('hidden', authenticated);
     $('#navLogin').classList.toggle('hidden', authenticated);
     $('#navRegister').classList.toggle('hidden', authenticated);
@@ -110,7 +111,7 @@
       const target=button.dataset.memberTab;
       $$('[data-member-tab]').forEach(x=>x.classList.toggle('active',x===button));
       $$('[data-member-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.memberModule!==target));
-      $('#userPanels').scrollIntoView({behavior:'smooth',block:'start'});
+      button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
     }));
     $$('[data-go-payment]').forEach(b=>b.addEventListener('click',()=>$$('[data-member-tab]').find(x=>x.dataset.memberTab==='payment')?.click()));
     $('#paymentForm')?.addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,submit=form.querySelector('button[type="submit"]'),f=new FormData(form),ref=String(f.get('payment_reference')||'').trim(),file=f.get('payment_evidence');if(!ref){toast('Enter the payment transaction reference.');return;}if(!file||!file.size){toast('Attach your payment confirmation screenshot or PDF.');return;}if(file.size>5*1024*1024){toast('Payment evidence must be 5 MB or smaller.');return;}const allowed=['image/jpeg','image/png','image/webp','application/pdf'];if(!allowed.includes(file.type)){toast('Upload a JPG, PNG, WEBP or PDF file.');return;}submit.disabled=true;submit.textContent='Uploading evidence…';const ext=file.name.split('.').pop().toLowerCase(),path=currentUser.id+'/'+crypto.randomUUID()+'.'+ext;try{const {error:uploadError}=await client.storage.from('payment-evidence').upload(path,file,{contentType:file.type,upsert:false});if(uploadError)throw uploadError;const {error}=await client.from('payments').insert({user_id:currentUser.id,amount:200,method:'KCB Paybill',paybill:'522522',account_number:'1343698359',payment_reference:ref,evidence_path:path});if(error){await client.storage.from('payment-evidence').remove([path]);throw error;}toast('Payment reference and evidence submitted for admin review.');await renderDashboard();}catch(err){toast('Payment submission failed: '+(err.message||'Please try again.'));submit.disabled=false;submit.textContent='Submit payment evidence for review';}});
@@ -191,7 +192,7 @@
       const target=button.dataset.adminTab;
       $$('[data-admin-tab]').forEach(x=>x.classList.toggle('active',x===button));
       $$('[data-admin-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.adminModule!==target));
-      $('#adminArea').scrollIntoView({behavior:'smooth',block:'start'});
+      button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
     }));
     const bindAnalytics=()=>{$('#analyticsRange')?.addEventListener('change',e=>{const section=$('[data-admin-module="analytics"]');const target=section?.querySelector('.dashboard-grid');if(target)target.innerHTML=card('Platform performance',analyticsPanel(e.target.value));bindAnalytics();});$('#analyticsExport')?.addEventListener('click',()=>{const days=analyticsRangeDays($('#analyticsRange')?.value||'30'),cutoff=days?Date.now()-days*86400000:0,records=[['Category','Date','Record','Status','Amount KSh']];const add=(kind,items,label,statusField,amountField)=>items.filter(x=>new Date(x.created_at).getTime()>=cutoff).forEach(x=>records.push([kind,new Date(x.created_at).toISOString(),label(x),statusField?x[statusField]:'',amountField?Number(x[amountField]||0):'']));add('Member',users,x=>x.full_name,'status');add('Campaign',campaigns,x=>x.title,'active');add('Payment',payments,x=>x.payment_reference,'status','amount');add('Submission',subs,x=>x.campaign_id,'status','approved_views');add('Withdrawal',withdrawals,x=>x.method+' · '+x.destination,'status','amount');add('Referral',refs,x=>x.referred_user_id,'eligible','bonus');const csv=records.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='gma-analytics-report.csv';a.click();URL.revokeObjectURL(url);});};
     bindAnalytics();
