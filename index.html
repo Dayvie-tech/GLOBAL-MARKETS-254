@@ -49,5 +49,5 @@ const menuToggle=document.getElementById('menuToggle'),primaryNav=document.getEl
 menuToggle.addEventListener('click',()=>{const open=menuToggle.getAttribute('aria-expanded')!=='true';menuToggle.setAttribute('aria-expanded',String(open));menuToggle.setAttribute('aria-label',open?'Close navigation':'Open navigation');primaryNav.classList.toggle('is-open',open);});
 primaryNav.querySelectorAll('a,button').forEach(link=>link.addEventListener('click',()=>{menuToggle.setAttribute('aria-expanded','false');menuToggle.setAttribute('aria-label','Open navigation');primaryNav.classList.remove('is-open');}));
 </script>
-<script src="config.js"></script><script src="app.js?v=20261108-analytics-redesign-1"></script>
+<script src="config.js"></script><script src="app.js?v=20261108-campaign-lifecycle-1"></script>
 </body></html>
