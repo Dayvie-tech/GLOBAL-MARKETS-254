@@ -96,7 +96,32 @@
     const withdrawalCards=list(withdrawals,w=>{const u=users.find(x=>x.id===w.user_id);return item(`${money(w.amount)} · ${u?.full_name||w.user_id}`,`${w.method} · ${w.destination}`,w.status,`<div class="row-actions">${w.status==='pending'?`<button class="btn small" data-withdraw-action="approved" data-id="${w.id}">Approve</button><button class="btn small ghost" data-withdraw-action="rejected" data-id="${w.id}">Reject</button>`:w.status==='approved'?`<button class="btn small" data-withdraw-action="paid" data-id="${w.id}">Mark paid</button>`:''}</div>`)});
     const referralCards=list(refs,r=>item(`Bonus ${money(r.bonus)}`,`Referrer ${r.referrer_id} · referred ${r.referred_user_id}`,r.eligible?'approved':'pending',`<div class="row-actions">${!r.eligible?`<button class="btn small" data-ref-action="approve" data-id="${r.id}">Approve referral</button>`:''}</div>`));
     const campaignForm=`<form id="campaignForm"><label>Campaign title<input name="title" required maxlength="140"></label><label>Description<textarea name="description" rows="3"></textarea></label><label>Rate per approved view (KSh)<input name="rate_per_view" type="number" min="0" step="0.01" value="50" required></label><label>Campaign duration: starts now and expires in 20 hours<input name="media" type="file" accept="image/png,image/jpeg,image/webp,video/mp4" required></label><button class="btn" type="submit">Create 20-hour campaign</button></form>`;
-    $('#adminPanels').innerHTML=[card(`Advertisers (${users.length})`,userCards),card(`Payment verification (${payments.length})`,paymentCards),card('Create campaign',campaignForm+campaignCards),card(`Proof review (${subs.length})`,subCards),card(`Withdrawal requests (${withdrawals.length})`,withdrawalCards),card(`Referral reviews (${refs.length})`,referralCards)].join('');
+
+    const adminStats='<div class="admin-overview-grid">'+[
+      ['Total members',users.length],
+      ['Pending payments',payments.filter(x=>x.status==='pending').length],
+      ['Active campaigns',campaigns.filter(x=>x.active).length],
+      ['Pending proofs',subs.filter(x=>x.status==='pending').length],
+      ['Pending withdrawals',withdrawals.filter(x=>x.status==='pending').length],
+      ['Referral reviews',refs.filter(x=>!x.eligible).length]
+    ].map(x=>'<div class="admin-metric"><span>'+safe(x[0])+'</span><strong>'+safe(x[1])+'</strong></div>').join('')+'</div>';
+    const adminModules=[
+      {id:'overview',label:'Overview',icon:'▦',html:card('Operations snapshot',adminStats+'<p class="muted">Use the sections on the left to manage the GMA platform. All approvals and account changes remain subject to database permissions.</p>')},
+      {id:'members',label:'Member Management',icon:'♙',html:card('Advertisers ('+users.length+')',userCards)},
+      {id:'payments',label:'Payment Verification',icon:'₭',html:card('Payment verification ('+payments.length+')',paymentCards)},
+      {id:'campaigns',label:'Campaign Manager',icon:'◈',html:card('Create and manage campaigns',campaignForm+campaignCards)},
+      {id:'proofs',label:'Submission & Proof Review',icon:'✓',html:card('Proof review ('+subs.length+')',subCards)},
+      {id:'referrals',label:'Referral Management',icon:'↗',html:card('Referral reviews ('+refs.length+')',referralCards)},
+      {id:'payouts',label:'Withdrawals & Payouts',icon:'₦',html:card('Withdrawal requests ('+withdrawals.length+')',withdrawalCards)},
+      {id:'activity',label:'Activity & Audit History',icon:'◷',html:card('Administrative activity','<p>Audit history is reserved here. The current database does not yet contain a dedicated audit-events table, so this section will not display fabricated activity. We will connect a secure, append-only audit log before relying on it for accountability.</p><p class="muted">Recorded events should include payment decisions, account status changes, campaign changes, proof reviews and payout decisions.</p>')},
+      {id:'settings',label:'Admin Settings',icon:'⚙',html:card('Administrator account','<div class="data-list">'+item(profile.full_name,profile.email,'admin')+item('Access level','Authorised GMA administrator')+item('Security','Administrative actions are restricted by Supabase row-level security')+'</div><p class="muted">Role changes and security-sensitive settings are not editable from this public browser interface.</p>')}
+    ];
+    $('#adminPanels').innerHTML='<div class="admin-shell"><nav class="admin-nav" aria-label="Admin modules">'+adminModules.map((m,i)=>'<button type="button" class="admin-nav-item '+(i===0?'active':'')+'" data-admin-tab="'+m.id+'"><span>'+m.icon+'</span>'+m.label+'</button>').join('')+'</nav><div class="admin-workspace">'+adminModules.map((m,i)=>'<section class="admin-module '+(i===0?'':'hidden')+'" data-admin-module="'+m.id+'"><div class="admin-module-heading"><p class="eyebrow">GMA ADMINISTRATION</p><h3>'+m.label+'</h3></div><div class="dashboard-grid">'+m.html+'</div></section>').join('')+'</div></div>';
+    $$('[data-admin-tab]').forEach(button=>button.addEventListener('click',()=>{
+      const target=button.dataset.adminTab;
+      $$('[data-admin-tab]').forEach(x=>x.classList.toggle('active',x===button));
+      $$('[data-admin-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.adminModule!==target));
+    }));
     $$('[data-user-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('profiles').update({status:b.dataset.userAction}).eq('id',b.dataset.id);if(error)toast(error.message);else{toast('Account status updated.');await renderDashboard();}});
     $$('[data-payment-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('payments').update({status:b.dataset.paymentAction,verified_by:currentUser.id,verified_at:new Date().toISOString()}).eq('id',b.dataset.id);if(error){toast(error.message);return;}if(b.dataset.paymentAction==='approved'){const {error:e2}=await client.from('profiles').update({status:'active'}).eq('id',b.dataset.user);if(e2)toast('Payment approved but account status update failed: '+e2.message);}toast('Payment review saved.');await renderDashboard();});
     $$('[data-sub-action]').forEach(b=>b.onclick=async()=>{const id=b.dataset.id;const approved=Number($(`[data-approved-for="${id}"]`)?.value||0);const {error}=await client.from('submissions').update({status:b.dataset.subAction,approved_views:b.dataset.subAction==='approved'?approved:0,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',id);if(error)toast(error.message);else{toast('Submission review saved.');await renderDashboard();}});
