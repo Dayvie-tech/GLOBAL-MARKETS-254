@@ -1,4 +1,4 @@
-const CACHE_NAME="gma-shell-v2";
+const CACHE_NAME="gma-shell-v3";
 const APP_SHELL=[
   "./",
   "./index.html",
@@ -9,8 +9,8 @@ const APP_SHELL=[
   "./contact.html",
   "./privacy.html",
   "./terms.html",
-  "./styles.css?v=20261108-mobile-pwa-workspace",
-  "./app.js?v=20261108-mobile-pwa-workspace",
+  "./styles.css?v=20261108-auth-install",
+  "./app.js?v=20261108-auth-install",
   "./config.js",
   "./manifest.webmanifest",
   "./icons/gma-icon.svg"
