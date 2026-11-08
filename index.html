@@ -13,9 +13,15 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<div class="announcement-bar"><span>GLOBAL MARKETING AGENCY · KENYA</span><span>TRANSPARENT CAMPAIGNS. GENUINE REACH.</span></div>
 <header class="topbar">
   <a class="brand" href="#home" aria-label="Global Marketing Agency home"><span class="mark">G</span><span class="brand-copy">GLOBAL <b>MARKETING AGENCY</b><small>KENYA · DIGITAL CAMPAIGNS</small></span></a>
-  <nav aria-label="Main navigation"><a href="#about">About</a><a href="#how">How it works</a><a href="#campaigns">Campaigns</a><a href="#faq">FAQs</a><button class="link" id="navLogin">Login</button><button class="btn small" id="navRegister">Join GMA</button></nav>
+  <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="primaryNav"><span></span><span></span><span></span></button>
+  <nav id="primaryNav" aria-label="Main navigation">
+    <a href="#home">Home</a><a href="#about">About</a><a href="#how">How it works</a>
+    <a href="#campaigns">Campaigns</a><a href="#faq">FAQs</a><a href="#auth">Member access</a>
+    <button class="link" id="navLogin">Login</button><button class="btn small" id="navRegister">Join GMA</button>
+  </nav>
 </header>
 <main>
 <section id="home" class="hero">
@@ -36,6 +42,12 @@
 </main>
 <footer><div class="footer-main"><a class="brand" href="#home"><span class="mark">G</span><span class="brand-copy">GLOBAL <b>MARKETING AGENCY</b><small>KENYA · DIGITAL CAMPAIGNS</small></span></a><p>Professional digital campaign coordination, built around clear terms and responsible participation.</p><div class="footer-links"><a href="#about">About</a><a href="#how">How it works</a><a href="#faq">FAQs</a><a href="#auth">Account</a></div></div><div class="footer-bottom"><span>© <span id="year"></span> Global Marketing Agency. All rights reserved.</span><span>Promote with purpose. Reach further.</span></div><p class="fine">Campaign participation is subject to published terms, eligibility checks and manual review. No view count, screenshot or income is guaranteed.</p></footer>
 <div class="toast" id="toast" role="status"></div>
-<script>document.getElementById('year').textContent=new Date().getFullYear();document.getElementById('footerRegister').addEventListener('click',()=>document.getElementById('heroRegister').click());</script>
+<script>
+document.getElementById('year').textContent=new Date().getFullYear();
+document.getElementById('footerRegister').addEventListener('click',()=>document.getElementById('heroRegister').click());
+const menuToggle=document.getElementById('menuToggle'),primaryNav=document.getElementById('primaryNav');
+menuToggle.addEventListener('click',()=>{const open=menuToggle.getAttribute('aria-expanded')!=='true';menuToggle.setAttribute('aria-expanded',String(open));menuToggle.setAttribute('aria-label',open?'Close navigation':'Open navigation');primaryNav.classList.toggle('is-open',open);});
+primaryNav.querySelectorAll('a,button').forEach(link=>link.addEventListener('click',()=>{menuToggle.setAttribute('aria-expanded','false');menuToggle.setAttribute('aria-label','Open navigation');primaryNav.classList.remove('is-open');}));
+</script>
 <script src="config.js"></script><script src="app.js"></script>
 </body></html>
