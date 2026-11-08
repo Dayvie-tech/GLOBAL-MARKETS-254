@@ -36,3 +36,12 @@
 .member-quick-grid span{display:block;color:var(--muted);font-size:11px;margin-top:4px}
 @media(max-width:850px){.member-shell{grid-template-columns:1fr}.member-nav{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}.member-nav-item{font-size:11px;padding:10px}}
 @media(max-width:480px){.member-nav{grid-template-columns:1fr 1fr}.member-nav-item{gap:7px}.member-quick-grid{grid-template-columns:1fr 1fr}}
+
+/* Earnings, balance and notification states */
+.member-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.notification-unread{border-left:3px solid var(--gold2);background:#17140d}
+.notification-unread strong{color:var(--text)}
+.data-item .btn.small{margin-top:9px}
+.member-nav-item:focus-visible,.member-module button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+.member-module button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:480px){.member-quick-grid{grid-template-columns:1fr 1fr}}
