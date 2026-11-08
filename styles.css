@@ -262,3 +262,73 @@ footer{padding-top:45px}
 #installApp[hidden]{display:none!important}
 #installApp{margin-left:6px}
 @media(max-width:900px){#installApp{margin:8px 0 0}}
+
+
+/* GMA PWA mobile workspace — compact app chrome and touch-first module navigation */
+body.gma-authenticated .announcement-bar,
+body.gma-authenticated main>section:not(#dashboard),
+body.gma-authenticated footer{display:none!important}
+body.gma-authenticated .topbar{min-height:66px;padding-top:9px;padding-bottom:9px}
+body.gma-authenticated .topbar nav,
+body.gma-authenticated .topbar .menu-toggle{display:none!important}
+body.gma-authenticated .dashboard-section{min-height:calc(100dvh - 66px);padding-top:22px;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+body.gma-authenticated .dashboard-title{margin-bottom:14px}
+body.gma-authenticated .member-nav,
+body.gma-authenticated .admin-nav{scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+body.gma-authenticated .member-nav::-webkit-scrollbar,
+body.gma-authenticated .admin-nav::-webkit-scrollbar{display:none}
+body.gma-authenticated .member-nav-item,
+body.gma-authenticated .admin-nav-item{scroll-snap-align:center;touch-action:pan-x}
+body.gma-authenticated .member-module,
+body.gma-authenticated .admin-module{animation:gmaPanelIn .18s ease-out}
+@keyframes gmaPanelIn{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){
+ body.gma-authenticated .dashboard-section{padding:16px 14px calc(26px + env(safe-area-inset-bottom))}
+ body.gma-authenticated .dashboard-title{padding:20px 18px;border-radius:16px;gap:12px}
+ body.gma-authenticated .dashboard-title h2{font-size:25px}
+ body.gma-authenticated .dashboard-title #welcomeText{font-size:11px}
+ body.gma-authenticated .workspace-switcher{position:sticky;top:66px;z-index:24;width:100%;margin-bottom:12px;padding:8px 10px;backdrop-filter:blur(14px);background:#14120deF}
+ body.gma-authenticated .workspace-switch-label{font-size:9px}
+ body.gma-authenticated .workspace-switch-toggle{min-height:40px;padding:9px 14px;font-size:11px}
+ body.gma-authenticated .stats{gap:9px;margin-bottom:13px}
+ body.gma-authenticated .stat{padding:14px;border-radius:13px}
+ body.gma-authenticated .stat span{font-size:10px}
+ body.gma-authenticated .stat strong{font-size:21px}
+ body.gma-authenticated .member-shell,
+ body.gma-authenticated .admin-shell{display:flex;flex-direction:column;gap:13px;margin:12px 0 24px}
+ body.gma-authenticated .member-nav,
+ body.gma-authenticated .admin-nav{position:sticky;top:66px;z-index:20;display:flex;flex-wrap:nowrap;width:calc(100% + 28px);max-width:none;margin:0 -14px;padding:9px 14px;gap:8px;overflow-x:auto;overflow-y:hidden;border:0;border-top:1px solid #332b19;border-bottom:1px solid #51421f;border-radius:0;background:rgba(13,13,13,.96);backdrop-filter:blur(16px);box-shadow:0 8px 18px #0005}
+ body.gma-authenticated .member-nav-item,
+ body.gma-authenticated .admin-nav-item{flex:0 0 auto;width:auto;min-width:max-content;min-height:42px;padding:10px 13px;border:1px solid #38332a;border-radius:999px;background:#171717;font-size:11px;gap:7px}
+ body.gma-authenticated .member-nav-item span,
+ body.gma-authenticated .admin-nav-item span{flex:0 0 auto;font-size:15px}
+ body.gma-authenticated .member-nav-item.active,
+ body.gma-authenticated .admin-nav-item.active{background:linear-gradient(110deg,#34280f,#1c170c);border-color:var(--gold);box-shadow:0 3px 12px #d7b34b1c}
+ body.gma-authenticated .member-workspace,
+ body.gma-authenticated .admin-workspace{width:100%;min-width:0}
+ body.gma-authenticated .member-module-heading,
+ body.gma-authenticated .admin-module-heading{padding:5px 2px 12px}
+ body.gma-authenticated .member-module-heading h3,
+ body.gma-authenticated .admin-module-heading h3{font-size:22px}
+ body.gma-authenticated .member-module .dash-card,
+ body.gma-authenticated .admin-module .dash-card{padding:17px;border-radius:14px}
+ body.gma-authenticated .member-quick-grid,
+ body.gma-authenticated .admin-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.gma-authenticated .data-item{padding:13px;border-radius:10px}
+ body.gma-authenticated .admin-payment-shortcut{padding:16px;border-radius:13px}
+}
+@media(max-width:480px){
+ body.gma-authenticated .dashboard-title{align-items:flex-start}
+ body.gma-authenticated .dashboard-title #logoutBtn{align-self:stretch;width:100%}
+ body.gma-authenticated .workspace-switcher{gap:8px}
+ body.gma-authenticated .workspace-switch-toggle{flex:1}
+ body.gma-authenticated .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.gma-authenticated .member-quick-grid,
+ body.gma-authenticated .admin-overview-grid{grid-template-columns:1fr 1fr}
+ body.gma-authenticated .member-module .dash-card,
+ body.gma-authenticated .admin-module .dash-card{padding:15px}
+}
+@media(display-mode:standalone){
+ body.gma-authenticated{padding-bottom:env(safe-area-inset-bottom)}
+ body.gma-authenticated .topbar{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+}
