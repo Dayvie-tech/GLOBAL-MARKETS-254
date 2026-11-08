@@ -55,7 +55,7 @@ Campaign availability, rates, eligibility and any compensation must be clearly s
 
 ## Schema and backend maintenance
 - `supabase-schema.sql` is the initial schema reference. Do not blindly rerun it against an existing database.
-- The live database has been hardened directly and verified. Keep a matching hardening SQL reference in version control before recreating the project elsewhere.
+- `gma-backend-hardening.sql` documents the security hardening already applied to the live backend. Review it against the target database before reusing it elsewhere.
 - Review RLS, Storage policies, Auth redirect settings and advisor findings after future schema changes.
 
 ## GitHub Pages
@@ -68,3 +68,4 @@ The repository uses the `main` branch and root directory. In GitHub Settings →
 - `config.js` — confirmed Supabase URL and public publishable key
 - `config.js.example` — safe configuration template
 - `supabase-schema.sql` — initial schema reference
+- `gma-backend-hardening.sql` — backend permissions, RLS, triggers and validation hardening
