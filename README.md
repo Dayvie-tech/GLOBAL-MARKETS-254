@@ -1,48 +1,70 @@
-# Global Marketing Agency — GitHub + Supabase starter
+# Global Marketing Agency
 
-Gold-and-black, mobile-friendly static website for Global Marketing Agency. GitHub Pages hosts the frontend; Supabase provides authentication, database and private file storage.
+A responsive gold-and-black marketing campaign website for Kenya. GitHub Pages hosts the frontend; Supabase provides authentication, database and private file storage.
 
-## Included
-- Public home page, agency description and how-it-works section
-- Email/password sign-up, login and password reset (Supabase Auth)
-- KSh 200 registration-payment submission and admin review
-- Admin account approval/suspension, campaign creation, screenshot review, withdrawal and referral review
-- 20-hour campaign expiry and screenshot upload
-- Referral code display and KSh 25 referral bonus workflow
-- Advertiser status, campaign submissions and activity records
+## Live website and source
+- Website: https://dayvie-tech.github.io/GLOBAL-MARKETS-254/
+- Repository: https://github.com/Dayvie-tech/GLOBAL-MARKETS-254
+- Supabase project: **GLOBAL MARKETING AGENCY**
+- Supabase project reference: `dgyvsuofnbshzilrwjrs`
+- Supabase organisation currently connected: **DAYVIE MERCHANTS COMPANY**
 
-## Fixed project details
-- Agency: Global Marketing Agency
-- Registration fee: KSh 200
-- KCB Paybill: `522522`
-- Account number: `1343698359`
-- Campaign duration: 20 hours
-- Referral bonus: KSh 25, subject to the agency's published eligibility rules
-- Default example rate: KSh 50 per approved view; set actual campaign terms before launch
+## Website sections
+- Home / hero and primary calls to action
+- About GMA
+- How it works
+- Campaign access overview
+- Transparency, authenticity and privacy principles
+- Frequently asked questions
+- Registration details
+- Account registration and login
+- Advertiser dashboard and administrator control centre
 
-## Deploy on GitHub Pages
-1. Create a Supabase project at https://supabase.com/.
-2. In Supabase **SQL Editor**, run `supabase-schema.sql`.
-3. In Supabase **Authentication → URL Configuration**, add your future GitHub Pages URL to Site URL / Redirect URLs.
-4. Copy `config.js.example` to a new file named `config.js`. Fill in the Supabase Project URL and public anon/publishable key from **Project Settings → API**. Never use the `service_role` key in browser code.
-5. Create a GitHub repository and upload `index.html`, `styles.css`, `app.js`, `config.js`, and `README.md`. Do not upload the example file instead of your configured `config.js`.
-6. In GitHub open **Settings → Pages**; choose **Deploy from a branch**, select `main` and `/(root)`, then Save.
-7. Open the GitHub Pages URL and test account creation, email confirmation, payment submission, file upload and admin review before inviting anyone.
+## Existing platform workflow
+- Email/password registration, login and password reset
+- KSh 200 registration payment reference submission and manual admin review
+- Admin account approval and suspension
+- Campaign creation and 20-hour example campaign window
+- Campaign media download and assignment record
+- Screenshot proof submission and manual review
+- Referral code display and KSh 25 referral workflow
+- Withdrawal requests and admin review
 
-### Set up the first administrator
-1. Register your own account on the website and confirm the email if confirmation is enabled.
-2. In Supabase SQL Editor run the following, replacing the email with your admin email:
-   `update public.profiles set role='admin', status='active' where email='YOUR_ADMIN_EMAIL';`
-3. Sign out and sign back in. The admin panels should appear.
+The public website explains the process. Campaign availability, rates, eligibility and any compensation must be clearly stated in each actual campaign. No income, views or approval are guaranteed.
 
-## Important before real launch
-This is a functional starter, not a fully audited financial platform. Test and tighten the database rules before collecting real users' data or payments. In particular, replace the broad profile-update policy in the SQL with column-restricted RPCs so a user can never edit their own role/status. Referral creation should be handled by a trusted database function after successful payment approval, and earnings should be stored in a ledger with server-side checks against duplicate/invalid submissions. The sample UI intentionally does not automatically pay people or treat screenshots as proof of authentic views.
+## Confirmed project connection — IMPORTANT
+The correct Supabase project is `dgyvsuofnbshzilrwjrs`. The previous GitHub configuration pointed to a different project and has been corrected to the confirmed project URL.
 
-Supabase SQL policies are security-critical. Have the final policies reviewed and test them using separate advertiser and admin accounts. Publish terms, privacy notice, campaign conditions, withdrawal eligibility and dispute/refund policies. Verify the paybill/account ownership and payment process independently before going live.
+**The Supabase project is currently INACTIVE/PAUSED.** The connected Supabase account refused to restore it because the organisation has reached its maximum of two active free projects. Do not create a replacement project or delete/pause another project without the owner's decision.
 
-## File layout
-- `index.html` — website structure
-- `styles.css` — responsive gold/black styling
+To resume backend work:
+1. In Supabase, decide which existing project can be paused or whether to upgrade the organisation so this GMA project can be restored.
+2. Restore **GLOBAL MARKETING AGENCY** (reference `dgyvsuofnbshzilrwjrs`).
+3. Obtain its public anon/publishable key from Project Settings → API.
+4. Add that key to `config.js` as `supabaseAnonKey`. Keep service_role/secret keys out of browser code.
+5. Confirm the existing database tables, migrations, Storage buckets and Auth settings before applying any schema changes.
+
+Until the project is restored and its correct public key is supplied, authentication and dashboards intentionally remain disconnected. The public website sections can still be viewed.
+
+## Existing schema file
+`supabase-schema.sql` is a starter schema only. It must be compared against the live database before applying it. Do not blindly re-run it on an existing database. Review and test RLS policies, storage policies, role assignment, referral eligibility and earnings/withdrawal logic before launch.
+
+## GitHub Pages
+The repository uses the `main` branch and root directory. In GitHub Settings → Pages, use Deploy from a branch → `main` → `/(root)`.
+
+## Before accepting real users or payments
+- Verify paybill/account ownership and payment process independently.
+- Publish terms, privacy notice, campaign conditions, withdrawal eligibility and dispute/refund policies.
+- Use separate advertiser and admin accounts to test all access rules.
+- Ensure advertisers cannot edit their own role, approval status, approved views or earnings.
+- Keep evidence private and restrict admin access.
+- Use a server-side ledger and validation for any approved earnings; screenshots alone do not prove genuine reach.
+- Complete a security review before real launch.
+
+## Files
+- `index.html` — semantic website structure and public sections
+- `styles.css` — responsive gold/black design
 - `app.js` — authentication, advertiser portal and admin UI
+- `config.js` — confirmed Supabase URL and public key placeholder
 - `config.js.example` — safe configuration template
-- `supabase-schema.sql` — database tables, access policies and storage setup
+- `supabase-schema.sql` — starter database schema and policies
