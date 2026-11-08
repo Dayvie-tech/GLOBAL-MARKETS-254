@@ -185,3 +185,65 @@ footer{padding-top:45px}
 .public-stats-foot{margin:14px 0 0;color:var(--muted);font-size:10px;line-height:1.6}
 @media(max-width:850px){.public-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.public-analytics-chart{grid-template-columns:1fr;gap:18px}}
 @media(max-width:520px){.public-analytics-head{align-items:flex-start;flex-direction:column}.public-analytics-head .btn{width:100%}.public-stat-card{padding:16px}.public-stat-card strong{font-size:28px}.public-analytics-chart{padding:18px}}
+
+
+/* GMA dashboard refresh — Holy Family-inspired clarity, spacing and app-like hierarchy.
+   Keep GMA's own black, charcoal and gold brand; this stylesheet does not touch the Holy Family repository. */
+.dashboard-section{padding-top:42px;padding-bottom:64px;background:radial-gradient(ellipse at 82% 0%,rgba(215,179,75,.075),transparent 34%),#090909}
+.dashboard-title{position:relative;overflow:hidden;align-items:center;margin:0 0 18px;padding:30px 32px;border:1px solid #4b3d1d;border-radius:19px;background:linear-gradient(125deg,#19170f 0%,#111 58%,#0c0c0c 100%);box-shadow:0 16px 38px rgba(0,0,0,.22)}
+.dashboard-title:after{content:"";position:absolute;width:240px;height:240px;right:-95px;top:-150px;border:1px solid rgba(215,179,75,.18);border-radius:50%;box-shadow:0 0 0 28px rgba(215,179,75,.035),0 0 0 58px rgba(215,179,75,.025);pointer-events:none}
+.dashboard-title>div,.dashboard-title>button{position:relative;z-index:1}
+.dashboard-title .eyebrow{margin-bottom:8px}
+.dashboard-title h2{font-size:clamp(27px,3vw,38px);line-height:1.15;letter-spacing:-1.2px;color:var(--text)}
+.dashboard-title #welcomeText{margin:9px 0 0;font-size:13px;line-height:1.6}
+.dashboard-title #logoutBtn{flex:0 0 auto;border-radius:999px;padding:10px 18px}
+.stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:0 0 18px}
+.stat{min-width:0;padding:19px 20px;border-radius:15px;background:linear-gradient(145deg,#171717,#101010);border-color:#303030;box-shadow:0 8px 22px rgba(0,0,0,.16)}
+.stat span{font-size:11px;letter-spacing:.025em}
+.stat strong{font:800 clamp(21px,2.3vw,27px) Manrope,sans-serif;color:var(--gold2);margin-top:7px}
+.notice{border-radius:14px;padding:17px 20px;line-height:1.7}
+.workspace-switcher{border-radius:14px;padding:12px 14px;margin:0 0 20px;background:#13120e;border-color:#4c3e20}
+.workspace-switch-label{letter-spacing:1.7px}
+.workspace-switch-toggle{border-radius:999px;padding:11px 19px}
+.member-shell,.admin-shell{gap:18px;margin:20px 0 30px;align-items:start}
+.member-nav,.admin-nav{top:104px;padding:11px;gap:7px;border-radius:17px;background:linear-gradient(160deg,#151515,#0e0e0e);border-color:#303030;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.member-nav-item,.admin-nav-item{min-height:43px;padding:11px 13px;border-radius:11px;font-size:12px;line-height:1.35}
+.member-nav-item span,.admin-nav-item span{flex:0 0 22px;font-size:17px}
+.member-nav-item:hover,.member-nav-item.active,.admin-nav-item:hover,.admin-nav-item.active{background:linear-gradient(110deg,#29220f,#17140d);border-color:#6b5524;color:#fff}
+.member-module,.admin-module{min-width:0}
+.member-module-heading,.admin-module-heading{padding:4px 2px 15px;margin:0 0 3px;border-bottom:1px solid #292929}
+.member-module-heading .eyebrow,.admin-module-heading .eyebrow{font-size:9px;letter-spacing:1.8px;margin:0 0 7px}
+.member-module-heading h3,.admin-module-heading h3{font-size:clamp(22px,2.5vw,28px);letter-spacing:-.6px;line-height:1.2}
+.member-module .dash-card,.admin-module .dash-card{padding:25px;border-radius:16px;background:linear-gradient(150deg,#171717,#101010);border-color:#303030;box-shadow:0 10px 28px rgba(0,0,0,.16)}
+.member-module .dash-card h3,.admin-module .dash-card h3{font-size:17px;margin-bottom:15px}
+.member-quick-grid>div,.admin-metric{border-radius:12px;background:#0c0c0c;border-color:#303030;padding:16px}
+.member-quick-grid strong,.admin-metric strong{color:var(--gold2)}
+.admin-overview-grid{gap:12px}
+.analytics-card{border-radius:15px;background:linear-gradient(150deg,#171717,#101010);border-color:#303030}
+.data-item{border-radius:11px;padding:15px 16px;margin-bottom:9px;background:#0d0d0d;border:1px solid #292929}
+.data-item:last-child{margin-bottom:0}
+.empty{padding:24px;border:1px dashed #5a4a24;border-radius:13px;background:#12110d}
+.member-module form,.admin-module form{gap:13px}
+.member-module input,.member-module select,.member-module textarea,.admin-module input,.admin-module select,.admin-module textarea{border-radius:10px}
+.member-module .btn,.admin-module .btn{border-radius:999px}
+.member-nav-item:focus-visible,.admin-nav-item:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+@media(max-width:900px){
+ .dashboard-section{padding-top:30px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .member-shell,.admin-shell{grid-template-columns:1fr}
+ .member-nav,.admin-nav{position:static;grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}
+}
+@media(max-width:600px){
+ .dashboard-title{padding:23px 20px;align-items:flex-start;flex-direction:column}
+ .dashboard-title #logoutBtn{align-self:flex-start}
+ .stats{gap:9px}
+ .stat{padding:15px}
+ .member-nav,.admin-nav{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px}
+ .member-nav-item,.admin-nav-item{padding:10px 9px;font-size:10px;gap:7px}
+ .member-module .dash-card,.admin-module .dash-card{padding:18px}
+ .member-quick-grid,.admin-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:380px){
+ .stats{grid-template-columns:1fr 1fr}
+ .member-nav-item,.admin-nav-item{font-size:9px}
+}
