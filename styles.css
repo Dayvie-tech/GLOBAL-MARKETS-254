@@ -45,3 +45,79 @@
 .member-nav-item:focus-visible,.member-module button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 .member-module button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:480px){.member-quick-grid{grid-template-columns:1fr 1fr}}
+
+
+/* GMA visual refresh — spacious, mobile-first layout inspired by the supplied reference */
+.announcement-bar{min-height:30px;padding:5px max(5%,calc((100% - var(--max))/2));display:flex;justify-content:space-between;align-items:center;gap:14px;background:#17140d;border-bottom:1px solid #3c3219;color:var(--gold2);font-size:8px;font-weight:800;letter-spacing:1.55px}
+.topbar{height:auto;min-height:78px;padding:13px max(5%,calc((100% - var(--max))/2));display:flex;align-items:center;gap:18px;position:sticky;top:0}
+.brand{min-width:0}
+.menu-toggle{width:46px;height:42px;border:1px solid #51431e;border-radius:9px;background:#17150f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;margin-left:auto}
+.menu-toggle span{width:19px;height:2px;border-radius:2px;background:var(--gold2);transition:.2s}
+.menu-toggle[aria-expanded="true"] span:first-child{transform:translateY(7px) rotate(45deg)}
+.menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
+.menu-toggle[aria-expanded="true"] span:last-child{transform:translateY(-7px) rotate(-45deg)}
+.topbar nav{display:none;position:absolute;left:0;right:0;top:100%;padding:17px max(5%,calc((100% - var(--max))/2)) 22px;background:#10100ff7;backdrop-filter:blur(18px);border-top:1px solid var(--line);border-bottom:1px solid #5a4921;box-shadow:0 18px 35px #0009;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 24px;align-items:center}
+.topbar nav.is-open{display:grid}
+.topbar nav a,.topbar nav .link{min-height:43px;display:flex;align-items:center;border-bottom:1px solid #302b20;font-size:12px;color:#e8e2d2}
+.topbar nav a:hover,.topbar nav .link:hover{color:var(--gold2)}
+.topbar nav .btn{margin-top:12px;justify-self:start}
+.hero{min-height:650px;padding:85px max(7%,calc((100% - var(--max))/2));grid-template-columns:1.12fr .88fr;gap:5%;background:radial-gradient(ellipse at 82% 48%,#d7b34b25 0,transparent 42%),linear-gradient(120deg,#090909 0%,#17130a 58%,#090909 100%)}
+.hero:after{content:'';position:absolute;left:-150px;bottom:-330px;width:520px;height:520px;border:1px solid #d7b34b20;border-radius:50%;box-shadow:0 0 0 45px #d7b34b08,0 0 0 90px #d7b34b06;pointer-events:none}
+.hero h1{font-size:clamp(42px,5.7vw,72px);letter-spacing:-2.8px}
+.hero-panel{max-width:440px;width:100%;justify-self:center;text-align:center;padding:26px 30px;border-radius:22px;background:linear-gradient(150deg,#211d12,#0e0e0d);border:1px solid #80672c;box-shadow:0 25px 90px #0008}
+.hero-panel .panel-top{justify-content:center}
+.hero-panel .panel-index{position:absolute;right:30px}
+.hero-panel .orbit{height:225px}
+.hero-panel .orbit-ring{width:190px;height:190px;border-color:#d7b34b70;box-shadow:0 0 0 17px #d7b34b10,0 0 0 36px #d7b34b08}
+.hero-panel .orbit-core{width:112px;height:112px;border-radius:50%;border:5px solid #fff4c9;background:radial-gradient(circle at 35% 25%,#fff6c8,var(--gold));font-size:58px;box-shadow:0 0 45px #d7b34b55}
+.hero-panel h2{font-size:22px}
+.hero-panel>p:not(.eyebrow){max-width:310px;margin:8px auto;color:#c8c0ae}
+.hero-panel .panel-tags{justify-content:center}
+.hero-bottom{margin-top:12px}
+.trust-strip{padding-top:23px;padding-bottom:23px}
+.section{padding-top:88px;padding-bottom:88px}
+.about-section{background:linear-gradient(180deg,#0a0a09,#0e0d0a)}
+.process-section{background:#10100e}
+.campaign-section{background:#090909}
+.principles-section{background:#11100d}
+.faq-section{background:#0a0a09}
+.closing-cta{padding:58px max(7%,calc((100% - var(--max))/2));background:linear-gradient(110deg,#211b0c,#0c0c0b);border-top:1px solid #4b3c1b;border-bottom:1px solid #4b3c1b}
+.fee-section{background:#0e0e0c}
+footer{padding-top:45px}
+@media(max-width:760px){
+ .announcement-bar{font-size:7px;letter-spacing:1px;padding:6px 17px}
+ .announcement-bar span:last-child{text-align:right}
+ .topbar{min-height:70px;padding:11px 17px}
+ .brand{gap:9px;font-size:10px;letter-spacing:1px}
+ .brand-copy small{font-size:7px;letter-spacing:1.4px}
+ .mark{width:37px;height:37px;font-size:23px}
+ .topbar nav{grid-template-columns:repeat(2,minmax(0,1fr));padding:13px 17px 18px;gap:0 16px}
+ .topbar nav a,.topbar nav .link{font-size:11px;min-height:42px}
+ .topbar nav .btn{width:100%;justify-self:stretch;grid-column:span 1}
+ .hero{min-height:0;padding:65px 20px 42px;grid-template-columns:1fr;gap:34px}
+ .hero-copy{max-width:640px}
+ .hero h1{font-size:clamp(42px,10vw,62px);letter-spacing:-2px}
+ .lead{font-size:14px}
+ .hero-panel{max-width:390px;padding:20px 23px}
+ .hero-panel .orbit{height:190px}
+ .hero-panel .orbit-ring{width:160px;height:160px}
+ .hero-panel .orbit-core{width:96px;height:96px;font-size:50px}
+ .hero-bottom{gap:13px;flex-wrap:wrap;font-size:8px;letter-spacing:1px}
+ .trust-strip{grid-template-columns:repeat(2,1fr);gap:15px;padding:20px}
+ .trust-strip div{padding:0;border:0}
+ .section{padding:65px 20px}
+ .about-grid,.campaign-grid,.faq-grid{grid-template-columns:1fr;gap:25px}
+ .section-kicker{margin-bottom:18px}
+ .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .closing-cta{padding:42px 20px;gap:22px;align-items:flex-start;flex-direction:column}
+}
+@media(max-width:420px){
+ .announcement-bar{font-size:6px;letter-spacing:.7px}
+ .topbar nav{grid-template-columns:1fr 1fr}
+ .hero{padding-top:53px}
+ .hero .actions{align-items:stretch;flex-direction:column}
+ .hero .actions .btn{width:100%}
+ .steps{grid-template-columns:1fr}
+ .trust-strip div{gap:8px}
+ .trust-strip span{font-size:10px}
+}
