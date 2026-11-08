@@ -332,3 +332,9 @@ body.gma-authenticated .admin-module{animation:gmaPanelIn .18s ease-out}
  body.gma-authenticated{padding-bottom:env(safe-area-inset-bottom)}
  body.gma-authenticated .topbar{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
 }
+
+/* Prominent GMA PWA install call to action */
+.install-app-cta{display:inline-flex;align-items:center;gap:9px;border-color:var(--gold);color:var(--gold2);cursor:pointer}
+.install-app-cta:hover{background:#d9b34b18;transform:translateY(-1px)}
+#installApp[hidden],#installAppHero[hidden]{display:none!important}
+@media(max-width:700px){.install-app-cta{width:100%;justify-content:center;min-height:48px}.hero .actions{flex-wrap:wrap}}
