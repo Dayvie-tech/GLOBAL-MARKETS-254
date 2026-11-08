@@ -257,3 +257,8 @@ footer{padding-top:45px}
 .admin-payment-shortcut .btn{white-space:nowrap}
 .nav-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--gold);color:#100e08;font-size:10px;margin-left:5px}
 @media(max-width:600px){.admin-payment-shortcut{align-items:flex-start;flex-direction:column;padding:17px}.admin-payment-shortcut .btn{width:100%}}
+
+/* GMA install prompt */
+#installApp[hidden]{display:none!important}
+#installApp{margin-left:6px}
+@media(max-width:900px){#installApp{margin:8px 0 0}}
