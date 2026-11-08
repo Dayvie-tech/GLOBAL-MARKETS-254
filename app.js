@@ -12,7 +12,15 @@
   const status = v => `<span class="status ${safe(String(v||'pending').toLowerCase())}">${safe(v||'pending')}</span>`;
   const msg = (id, text, bad=false) => { const el=$('#'+id); if(el){el.textContent=text;el.style.color=bad?'var(--red)':'var(--gold2)';} };
   const needConfig = () => { if(!client){toast('Backend not configured yet. Follow README.md to connect Supabase.');return false;}return true; };
+  const setAuthVisibility = (authenticated) => {
+    $('#auth').classList.toggle('hidden', authenticated);
+    $('#navLogin').classList.toggle('hidden', authenticated);
+    $('#navRegister').classList.toggle('hidden', authenticated);
+    $('#heroRegister').classList.toggle('hidden', authenticated);
+    $('#footerRegister').classList.toggle('hidden', authenticated);
+  };
   const goAuth = (mode='register') => { $('#auth').scrollIntoView({behavior:'smooth'}); if(mode==='login') $('#loginForm input').focus(); else $('#registerForm input').focus(); };
+  setAuthVisibility(false);
   $('#navRegister').onclick=()=>goAuth('register'); $('#heroRegister').onclick=()=>goAuth('register'); $('#navLogin').onclick=()=>goAuth('login');
 
   $('#registerForm').addEventListener('submit', async e => {
@@ -22,8 +30,12 @@
     try {
       const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name,phone,referral_code:referralCode},emailRedirectTo:'https://dayvie-tech.github.io/GLOBAL-MARKETS-254/'}});
       if(error) throw error;
-      if(data.user && data.session){ await ensureProfile(data.user,full_name,phone,referralCode); await refresh(); msg('registerMsg','Account created. Your registration payment must be submitted and manually approved before campaign access.'); }
-      else msg('registerMsg','Check your email to confirm your account, then sign in. Your profile will be created after confirmation.');
+      if(data.user && data.session){ await ensureProfile(data.user,full_name,phone,referralCode); await refresh(); msg('registerMsg',''); }
+      else {
+        $('#authHeading').textContent='Check your email';
+        $('#authSub').textContent='Your registration request was received. Confirm your email using the link we sent; then return to sign in and open your GMA workspace.';
+        $('.auth-grid').classList.add('hidden');
+      }
       document.querySelector('#registerForm').reset();
     } catch(err){msg('registerMsg',err.message||'Registration failed.',true);}
   });
@@ -34,7 +46,7 @@
     catch(err){msg('loginMsg',err.message||'Login failed.',true);}
   });
   $('#resetPassword').onclick=async()=>{if(!needConfig())return;const email=$('#loginForm [name=email]').value.trim();if(!email){msg('loginMsg','Enter your email address first.',true);return;}const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});msg('loginMsg',error?error.message:'If that email belongs to an account, a reset link will be sent.');};
-  $('#logoutBtn').onclick=async()=>{if(client)await client.auth.signOut();currentUser=null;profile=null;$('#dashboard').classList.add('hidden');toast('You have been logged out.');};
+  $('#logoutBtn').onclick=async()=>{if(client)await client.auth.signOut();currentUser=null;profile=null;$('#dashboard').classList.add('hidden');setAuthVisibility(false);$('.auth-grid').classList.remove('hidden');$('#authHeading').textContent='Welcome to Global Marketing Agency';$('#authSub').textContent='Create an account or sign in to continue to your workspace.';toast('You have been logged out.');};
 
   async function ensureProfile(user, fullName, phone, referralCode){
     // The trusted database trigger creates the profile and records valid referral codes.
@@ -43,7 +55,7 @@
   }
   async function getProfile(){const {data,error}=await client.from('profiles').select('*').eq('id',currentUser.id).maybeSingle();if(error)throw error;if(!data)throw new Error('Your profile is not ready yet. Confirm your email if required, then sign in again.');return data;}
   async function rows(table, query= q=>q){let q=client.from(table).select('*');q=query(q);const {data,error}=await q;if(error)throw error;return data||[];}
-  async function refresh(){if(!client)return;const {data:{user}}=await client.auth.getUser();currentUser=user;if(!user){$('#dashboard').classList.add('hidden');return;}try{profile=await getProfile();$('#dashboard').classList.remove('hidden');$('#welcomeText').textContent=`Signed in as ${profile.full_name} · Account ${profile.status}`;$('#dashTitle').textContent=profile.role==='admin'?'Admin dashboard':'Advertiser dashboard';await renderDashboard();}catch(err){toast(err.message);}}
+  async function refresh(){if(!client)return;const {data:{user}}=await client.auth.getUser();currentUser=user;setAuthVisibility(Boolean(user));if(!user){profile=null;$('#dashboard').classList.add('hidden');return;}try{profile=await getProfile();$('#dashboard').classList.remove('hidden');$('#welcomeText').textContent=`Signed in as ${profile.full_name} · Account ${profile.status}`;$('#dashTitle').textContent=profile.role==='admin'?'Admin dashboard':'Advertiser dashboard';await renderDashboard();}catch(err){toast(err.message);}}
   function card(title, body){return `<section class="dash-card"><h3>${title}</h3>${body}</section>`;}
   function list(items, render){return items.length?`<div class="data-list">${items.map(render).join('')}</div>`:'<p class="empty">Nothing to show yet.</p>';}
   function item(title, detail, st='', extra=''){return `<div class="data-item"><strong>${safe(title)}</strong><small>${safe(detail||'')}</small>${st?status(st):''}${extra}</div>`;}
