@@ -29,6 +29,23 @@
   <aside class="hero-panel"><div class="panel-top"><span class="live-dot"></span> THE GMA WORKFLOW <span class="panel-index">01 / 04</span></div><div class="orbit"><div class="orbit-ring"></div><div class="orbit-core">G</div><span class="orbit-node node-a">01</span><span class="orbit-node node-b">02</span><span class="orbit-node node-c">03</span></div><p class="eyebrow">ONE CONNECTED PLATFORM</p><h2>From campaign to confirmation.</h2><p>Know what to do, where to submit and when your work has been reviewed.</p><div class="panel-tags"><span>Campaigns</span><span>Verification</span><span>Reports</span></div></aside>
   <div class="hero-bottom"><span>INDEPENDENT ADVERTISERS</span><span>CAMPAIGN MANAGEMENT</span><span>ACCOUNTABILITY FIRST</span></div>
 </section>
+<section class="section public-analytics-section" id="platform-stats" aria-labelledby="publicStatsTitle">
+  <div class="public-analytics-head">
+    <div><div class="section-kicker">LIVE PLATFORM SNAPSHOT</div><p class="eyebrow">GMA IN NUMBERS</p><h2 id="publicStatsTitle">Progress you can <span>see.</span></h2><p class="muted">A live view of verified, aggregate platform activity. Figures refresh from the GMA database.</p></div>
+    <button class="btn ghost small" type="button" id="refreshPublicStats">↻ Refresh figures</button>
+  </div>
+  <div class="public-stat-grid" aria-live="polite">
+    <article class="public-stat-card"><span class="public-stat-icon">♙</span><small>ACTIVE ADVERTISERS</small><strong id="publicActiveAdvertisers">—</strong><span>Approved active accounts</span></article>
+    <article class="public-stat-card"><span class="public-stat-icon">◈</span><small>CAMPAIGNS PUBLISHED</small><strong id="publicTotalCampaigns">—</strong><span>Campaign records on GMA</span></article>
+    <article class="public-stat-card"><span class="public-stat-icon">◎</span><small>LIVE CAMPAIGNS</small><strong id="publicLiveCampaigns">—</strong><span>Currently within their active window</span></article>
+    <article class="public-stat-card"><span class="public-stat-icon">✓</span><small>APPROVED SUBMISSIONS</small><strong id="publicApprovedSubmissions">—</strong><span>Proofs reviewed and approved</span></article>
+  </div>
+  <div class="public-analytics-chart">
+    <div><p class="eyebrow">PLATFORM ACTIVITY</p><h3>GMA at a glance</h3><p class="muted">Relative scale of the current platform totals.</p></div>
+    <div class="public-bars" id="publicStatsBars"><p class="muted">Loading live figures…</p></div>
+  </div>
+  <p class="public-stats-foot" id="publicStatsStatus">Loading live platform figures…</p>
+</section>
 <section class="trust-strip"><div><strong>01</strong><span>Register securely</span></div><div><strong>02</strong><span>Get verified</span></div><div><strong>03</strong><span>Join campaigns</span></div><div><strong>04</strong><span>Submit genuine proof</span></div></section>
 <section id="about" class="section about-section"><div class="section-kicker">01 — WHO WE ARE</div><div class="about-grid"><div><p class="eyebrow">ABOUT GLOBAL MARKETING AGENCY</p><h2>Marketing works better when the process is <span>clear.</span></h2></div><div><p class="body-copy">GMA is a campaign coordination platform designed to connect businesses and product owners with independent digital advertisers. We bring campaign instructions, approved media, evidence submissions and review updates into one organised space.</p><p class="body-copy muted">Our focus is responsible promotion: clear campaign conditions, genuine participation and transparent review. Campaign availability and any compensation are defined separately for each campaign.</p></div></div></section>
 <section id="how" class="section process-section"><div class="section-head"><div class="section-kicker">02 — THE PROCESS</div><p class="eyebrow">SIMPLE BY DESIGN</p><h2>Four steps. One clear journey.</h2><p class="muted">Every stage is visible, so you know what is expected before you participate.</p></div><div class="steps"><article><span class="step-no">01</span><div class="step-icon">↗</div><h3>Create your account</h3><p>Register with your name, phone number and email. Keep your login details private.</p></article><article><span class="step-no">02</span><div class="step-icon">✓</div><h3>Submit registration</h3><p>Follow the displayed registration instructions and submit your payment reference for manual review.</p></article><article><span class="step-no">03</span><div class="step-icon">◎</div><h3>Choose a campaign</h3><p>Once approved, review the campaign brief, rules, timing and available promotional material.</p></article><article><span class="step-no">04</span><div class="step-icon">⌁</div><h3>Send proof for review</h3><p>Complete the task honestly and upload the requested evidence before the campaign closes.</p></article></div></section>
@@ -49,5 +66,30 @@ const menuToggle=document.getElementById('menuToggle'),primaryNav=document.getEl
 menuToggle.addEventListener('click',()=>{const open=menuToggle.getAttribute('aria-expanded')!=='true';menuToggle.setAttribute('aria-expanded',String(open));menuToggle.setAttribute('aria-label',open?'Close navigation':'Open navigation');primaryNav.classList.toggle('is-open',open);});
 primaryNav.querySelectorAll('a,button').forEach(link=>link.addEventListener('click',()=>{menuToggle.setAttribute('aria-expanded','false');menuToggle.setAttribute('aria-label','Open navigation');primaryNav.classList.remove('is-open');}));
 </script>
-<script src="config.js"></script><script src="app.js?v=20261108-campaign-lifecycle-1"></script>
+<script src="config.js"></script>
+<script>
+(async function loadPublicGmaStats(){
+  const ids={active_advertisers:'publicActiveAdvertisers',total_campaigns:'publicTotalCampaigns',live_campaigns:'publicLiveCampaigns',approved_submissions:'publicApprovedSubmissions'};
+  const labels={active_advertisers:'Active advertisers',total_campaigns:'Campaigns published',live_campaigns:'Live campaigns',approved_submissions:'Approved submissions'};
+  const status=document.getElementById('publicStatsStatus'),bars=document.getElementById('publicStatsBars'),refresh=document.getElementById('refreshPublicStats');
+  const format=value=>Number(value||0).toLocaleString('en-KE');
+  async function load(){
+    if(!window.GMA_CONFIG?.supabaseUrl||!window.GMA_CONFIG?.supabaseAnonKey||!window.supabase?.createClient){status.textContent='Live figures are temporarily unavailable.';return;}
+    refresh.disabled=true;status.textContent='Refreshing live platform figures…';
+    try{
+      const client=window.supabase.createClient(window.GMA_CONFIG.supabaseUrl,window.GMA_CONFIG.supabaseAnonKey);
+      const {data,error}=await client.rpc('get_public_gma_stats');
+      if(error)throw error;
+      if(!data||typeof data!=='object')throw new Error('No statistics returned.');
+      Object.entries(ids).forEach(([key,id])=>{const el=document.getElementById(id);if(el)el.textContent=format(data[key]);});
+      const values=Object.keys(ids).map(key=>({key,label:labels[key],value:Number(data[key]||0)})),max=Math.max(1,...values.map(x=>x.value));
+      bars.innerHTML=values.map(x=>'<div class="public-bar-row"><div class="public-bar-label"><span>'+x.label+'</span><strong>'+format(x.value)+'</strong></div><div class="public-bar-track"><i style="width:'+Math.max(0,Math.min(100,x.value/max*100))+'%"></i></div></div>').join('');
+      status.textContent='Live figures · Last updated '+new Date().toLocaleString('en-KE',{dateStyle:'medium',timeStyle:'short'})+'. Aggregate counts only; no member or payment details are displayed.';
+    }catch(error){status.textContent='Live figures could not be loaded right now. Please refresh in a moment.';bars.innerHTML='<p class="muted">Statistics are temporarily unavailable.</p>';console.warn('GMA public statistics:',error);}
+    finally{refresh.disabled=false;}
+  }
+  refresh?.addEventListener('click',load);load();
+})();
+</script>
+<script src="app.js?v=20261108-public-analytics-1"></script>
 </body></html>
