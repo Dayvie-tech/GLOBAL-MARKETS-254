@@ -55,7 +55,7 @@
   }
   async function getProfile(){const {data,error}=await client.from('profiles').select('*').eq('id',currentUser.id).maybeSingle();if(error)throw error;if(!data)throw new Error('Your profile is not ready yet. Confirm your email if required, then sign in again.');return data;}
   async function rows(table, query= q=>q){let q=client.from(table).select('*');q=query(q);const {data,error}=await q;if(error)throw error;return data||[];}
-  async function refresh(){if(!client)return;const {data:{user}}=await client.auth.getUser();currentUser=user;setAuthVisibility(Boolean(user));if(!user){profile=null;$('#dashboard').classList.add('hidden');return;}try{profile=await getProfile();$('#dashboard').classList.remove('hidden');$('#welcomeText').textContent=`Signed in as ${profile.full_name} · Account ${profile.status}`;$('#dashTitle').textContent=profile.role==='admin'?'Admin dashboard':'Advertiser dashboard';await renderDashboard();}catch(err){toast(err.message);}}
+  async function refresh(){if(!client)return;const {data:{user}}=await client.auth.getUser();currentUser=user;setAuthVisibility(Boolean(user));if(!user){profile=null;$('#dashboard').classList.add('hidden');return;}try{profile=await getProfile();$('#dashboard').classList.remove('hidden');$('#welcomeText').textContent=`Signed in as ${profile.full_name} · Account ${profile.status}`;$('#dashTitle').textContent=profile.role==='admin'?'Admin dashboard':'Advertiser dashboard';const isAdmin=profile.role==='admin';$('#workspaceSwitcher').classList.toggle('hidden',!isAdmin);$('#userPanels').classList.toggle('hidden',isAdmin);$('#adminArea').classList.toggle('hidden',!isAdmin);$('#openAdminWorkspace')?.classList.toggle('active',isAdmin);$('#openMemberWorkspace')?.classList.toggle('active',!isAdmin);await renderDashboard();}catch(err){toast(err.message);}}
   function card(title, body){return `<section class="dash-card"><h3>${title}</h3>${body}</section>`;}
   function list(items, render){return items.length?`<div class="data-list">${items.map(render).join('')}</div>`:'<p class="empty">Nothing to show yet.</p>';}
   function item(title, detail, st='', extra=''){return `<div class="data-item"><strong>${safe(title)}</strong><small>${safe(detail||'')}</small>${st?status(st):''}${extra}</div>`;}
@@ -106,10 +106,11 @@
       {id:'support',label:'Help & Support',icon:'?',html:card('Need help?','<p>For payment, campaign review or withdrawal questions, keep your transaction reference and relevant campaign details ready when contacting the agency through its published support channel.</p><p class="muted">Never send your password, one-time verification code or full payment PIN to anyone claiming to be support.</p>')}
     ];
     $('#userPanels').innerHTML='<div class="member-shell"><nav class="member-nav" aria-label="Member modules">'+memberModules.map((m,i)=>'<button type="button" class="member-nav-item '+(i===0?'active':'')+'" data-member-tab="'+m.id+'"><span>'+m.icon+'</span>'+m.label+'</button>').join('')+'</nav><div class="member-workspace">'+memberModules.map((m,i)=>'<section class="member-module '+(i===0?'':'hidden')+'" data-member-module="'+m.id+'"><div class="member-module-heading"><p class="eyebrow">ADVERTISER WORKSPACE</p><h3>'+m.label+'</h3></div><div class="dashboard-grid">'+m.html+'</div></section>').join('')+'</div></div>';
-    $$('[data-member-tab]').forEach(button=>button.addEventListener('click',()=>{
+    $('[data-member-tab]').forEach(button=>button.addEventListener('click',()=>{
       const target=button.dataset.memberTab;
-      $$('[data-member-tab]').forEach(x=>x.classList.toggle('active',x===button));
-      $$('[data-member-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.memberModule!==target));
+      $('[data-member-tab]').forEach(x=>x.classList.toggle('active',x===button));
+      $('[data-member-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.memberModule!==target));
+      $('#userPanels').scrollIntoView({behavior:'smooth',block:'start'});
     }));
     $('#paymentForm')?.addEventListener('submit',async e=>{e.preventDefault();const ref=new FormData(e.currentTarget).get('payment_reference').trim();const {error}=await client.from('payments').insert({user_id:currentUser.id,amount:200,method:'KCB Paybill',paybill:'522522',account_number:'1343698359',payment_reference:ref});if(error){toast(error.message);return;}toast('Payment reference submitted for admin review.');await renderDashboard();});
     $('#submissionForm')?.addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),file=f.get('proof'),campaignId=f.get('campaign_id');if(!file||!file.size){toast('Choose a screenshot first.');return;}if(file.size>5*1024*1024){toast('Screenshot must be 5 MB or smaller.');return;}const ext=file.name.split('.').pop().toLowerCase();if(!['jpg','jpeg','png','webp'].includes(ext)){toast('Use JPG, PNG or WEBP.');return;}const path=`${currentUser.id}/${crypto.randomUUID()}.${ext}`;const {error:upErr}=await client.storage.from('proof-screenshots').upload(path,file,{contentType:file.type,upsert:false});if(upErr){toast(upErr.message);return;}const campaign=campaigns.find(c=>c.id===campaignId);const {error}=await client.from('submissions').insert({campaign_id:campaignId,user_id:currentUser.id,screenshot_path:path,claimed_views:Number(f.get('claimed_views')),rate_per_view:campaign?.rate_per_view||0});if(error){toast(error.message);return;}toast('Screenshot submitted for verification.');await renderDashboard();});
@@ -117,7 +118,17 @@
     $('[data-notification-read]').forEach(btn=>btn.addEventListener('click',async()=>{const {error}=await client.from('notifications').update({read_at:new Date().toISOString()}).eq('id',btn.dataset.notificationRead).eq('user_id',currentUser.id);if(error){toast(error.message);return;}await renderDashboard();}));
     $('#markAllNotifications')?.addEventListener('click',async()=>{const {error}=await client.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',currentUser.id).is('read_at',null);if(error){toast(error.message);return;}toast('All notifications marked as read.');await renderDashboard();});
     $('.campaignDetails').forEach(btn=>btn.addEventListener('click',async()=>{const c=campaigns.find(x=>x.id===btn.dataset.id);if(!c)return;let media='';if(c.media_path){const {data}=await client.storage.from('campaign-media').createSignedUrl(c.media_path,300);media=data?.signedUrl||'';}const {error}=await client.from('campaign_assignments').upsert({campaign_id:c.id,user_id:currentUser.id,downloaded_at:new Date().toISOString()},{onConflict:'campaign_id,user_id'});if(error){toast(error.message);return;}if(media)window.open(media,'_blank','noopener');else toast('Campaign has no download file yet. Contact the administrator.');}));
-    if(profile.role==='admin') await renderAdmin(); else $('#adminArea').classList.add('hidden');
+    if(profile.role==='admin'){await renderAdmin();$('#openAdminWorkspace')?.addEventListener('click',()=>setWorkspace('admin'));$('#openMemberWorkspace')?.addEventListener('click',()=>setWorkspace('member'));}else $('#adminArea').classList.add('hidden');
+  }
+  function setWorkspace(which){
+    const admin=which==='admin';
+    $('#adminArea').classList.toggle('hidden',!admin);
+    $('#userPanels').classList.toggle('hidden',admin);
+    $('#openAdminWorkspace')?.classList.toggle('active',admin);
+    $('#openMemberWorkspace')?.classList.toggle('active',!admin);
+    $('#dashTitle').textContent=admin?'Admin dashboard':'Member portal';
+    const target=admin?$('#adminArea'):$('#userPanels');
+    target?.scrollIntoView({behavior:'smooth',block:'start'});
   }
   async function renderAdmin(){
     $('#adminArea').classList.remove('hidden');
@@ -152,10 +163,11 @@
       {id:'settings',label:'Admin Settings',icon:'⚙',html:card('Administrator account','<div class="data-list">'+item(profile.full_name,profile.email,'admin')+item('Access level','Authorised GMA administrator')+item('Security','Administrative actions are restricted by Supabase row-level security')+'</div><p class="muted">Role changes and security-sensitive settings are not editable from this public browser interface.</p>')}
     ];
     $('#adminPanels').innerHTML='<div class="admin-shell"><nav class="admin-nav" aria-label="Admin modules">'+adminModules.map((m,i)=>'<button type="button" class="admin-nav-item '+(i===0?'active':'')+'" data-admin-tab="'+m.id+'"><span>'+m.icon+'</span>'+m.label+'</button>').join('')+'</nav><div class="admin-workspace">'+adminModules.map((m,i)=>'<section class="admin-module '+(i===0?'':'hidden')+'" data-admin-module="'+m.id+'"><div class="admin-module-heading"><p class="eyebrow">GMA ADMINISTRATION</p><h3>'+m.label+'</h3></div><div class="dashboard-grid">'+m.html+'</div></section>').join('')+'</div></div>';
-    $$('[data-admin-tab]').forEach(button=>button.addEventListener('click',()=>{
+    $('[data-admin-tab]').forEach(button=>button.addEventListener('click',()=>{
       const target=button.dataset.adminTab;
-      $$('[data-admin-tab]').forEach(x=>x.classList.toggle('active',x===button));
-      $$('[data-admin-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.adminModule!==target));
+      $('[data-admin-tab]').forEach(x=>x.classList.toggle('active',x===button));
+      $('[data-admin-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.adminModule!==target));
+      $('#adminArea').scrollIntoView({behavior:'smooth',block:'start'});
     }));
     $$('[data-user-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('profiles').update({status:b.dataset.userAction}).eq('id',b.dataset.id);if(error)toast(error.message);else{toast('Account status updated.');await renderDashboard();}});
     $$('[data-payment-action]').forEach(b=>b.onclick=async()=>{const {error}=await client.from('payments').update({status:b.dataset.paymentAction,verified_by:currentUser.id,verified_at:new Date().toISOString()}).eq('id',b.dataset.id);if(error){toast(error.message);return;}if(b.dataset.paymentAction==='approved'){const {error:e2}=await client.from('profiles').update({status:'active'}).eq('id',b.dataset.user);if(e2)toast('Payment approved but account status update failed: '+e2.message);}toast('Payment review saved.');await renderDashboard();});
