@@ -6,6 +6,31 @@
   const $ = (s, root=document) => root.querySelector(s);
   const $$ = (s, root=document) => [...root.querySelectorAll(s)];
   let currentUser = null, profile = null;
+  // Portal tabs are delegated at document level before any async rendering.
+  document.addEventListener('click', event => {
+    const el = event.target;
+    const button = el && typeof el.closest === 'function' ? el.closest('[data-member-tab],[data-admin-tab]') : null;
+    if (!button) return;
+    const admin = button.hasAttribute('data-admin-tab');
+    const target = admin ? button.dataset.adminTab : button.dataset.memberTab;
+    const tabs = admin ? '[data-admin-tab]' : '[data-member-tab]';
+    const modules = admin ? '[data-admin-module]' : '[data-member-module]';
+    const attr = admin ? 'admin' : 'member';
+    const panel = document.querySelector(modules+'[data-'+attr+'-module="'+target+'"]');
+    if (!panel) return;
+    document.querySelectorAll(tabs).forEach(tab => {
+      const active = tab === button;
+      tab.classList.toggle('active',active);
+      tab.setAttribute('aria-selected',active?'true':'false');
+    });
+    document.querySelectorAll(modules).forEach(section => {
+      const active = section === panel;
+      section.classList.toggle('hidden',!active);
+      section.setAttribute('aria-hidden',active?'false':'true');
+    });
+    if (button.scrollIntoView) button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
+  }, true);
+
   const toast = (msg) => { const el=$('#toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3500); };
   const safe = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money = v => `KSh ${Number(v||0).toLocaleString('en-KE',{maximumFractionDigits:2})}`;
@@ -108,26 +133,11 @@
       {id:'support',label:'Help & Support',icon:'?',html:card('Need help?','<p>For payment, campaign review or withdrawal questions, keep your transaction reference and relevant campaign details ready when contacting the agency through its published support channel.</p><p class="muted">Never send your password, one-time verification code or full payment PIN to anyone claiming to be support.</p>')}
     ];
     $('#userPanels').innerHTML='<div class="member-shell"><nav class="member-nav" aria-label="Member modules">'+memberModules.map((m,i)=>'<button type="button" class="member-nav-item '+(i===0?'active':'')+'" data-member-tab="'+m.id+'" aria-selected="'+(i===0?'true':'false')+'" aria-controls="member-panel-'+m.id+'"><span>'+m.icon+'</span>'+m.label+'</button>').join('')+'</nav><div class="member-workspace">'+memberModules.map((m,i)=>'<section id="member-panel-'+m.id+'" class="member-module '+(i===0?'':'hidden')+'" data-member-module="'+m.id+'" aria-hidden="'+(i===0?'false':'true')+'"><div class="member-module-heading"><p class="eyebrow">ADVERTISER WORKSPACE</p><h3>'+m.label+'</h3></div><div class="dashboard-grid">'+m.html+'</div></section>').join('')+'</div></div>';
-    const memberNav=$('.member-nav');
-    memberNav?.addEventListener('click',event=>{
-      const button=event.target.closest('[data-member-tab]');
-      if(!button||!memberNav.contains(button))return;
-      const target=button.dataset.memberTab;
-      const panel=$('[data-member-module="'+target+'"]');
-      if(!panel)return;
-      $$('[data-member-tab]').forEach(x=>{
-        const active=x===button;
-        x.classList.toggle('active',active);
-        x.setAttribute('aria-selected',active?'true':'false');
-      });
-      $$('[data-member-module]').forEach(section=>{
-        const active=section===panel;
-        section.classList.toggle('hidden',!active);
-        section.setAttribute('aria-hidden',active?'false':'true');
-      });
-      button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
-    },true);
-    $$('[data-go-payment]').forEach(b=>b.addEventListener('click',()=>$$('[data-member-tab]').find(x=>x.dataset.memberTab==='payment')?.click()));
+    // Member navigation is handled by the document-level delegate.
+    $$('[data-go-payment]').forEach(b=>b.addEventListener('click',()=>{
+      const paymentTab=$('[data-member-tab="payment"]');
+      if(paymentTab) paymentTab.click();
+    }));
     $('#paymentForm')?.addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,submit=form.querySelector('button[type="submit"]'),f=new FormData(form),ref=String(f.get('payment_reference')||'').trim(),file=f.get('payment_evidence');if(!ref){toast('Enter the payment transaction reference.');return;}if(!file||!file.size){toast('Attach your payment confirmation screenshot or PDF.');return;}if(file.size>5*1024*1024){toast('Payment evidence must be 5 MB or smaller.');return;}const allowed=['image/jpeg','image/png','image/webp','application/pdf'];if(!allowed.includes(file.type)){toast('Upload a JPG, PNG, WEBP or PDF file.');return;}submit.disabled=true;submit.textContent='Uploading evidence…';const ext=file.name.split('.').pop().toLowerCase(),path=currentUser.id+'/'+crypto.randomUUID()+'.'+ext;try{const {error:uploadError}=await client.storage.from('payment-evidence').upload(path,file,{contentType:file.type,upsert:false});if(uploadError)throw uploadError;const {error}=await client.from('payments').insert({user_id:currentUser.id,amount:200,method:'KCB Paybill',paybill:'522522',account_number:'1343698359',payment_reference:ref,evidence_path:path});if(error){await client.storage.from('payment-evidence').remove([path]);throw error;}toast('Payment reference and evidence submitted for admin review.');await renderDashboard();}catch(err){toast('Payment submission failed: '+(err.message||'Please try again.'));submit.disabled=false;submit.textContent='Submit payment evidence for review';}});
     $('#submissionForm')?.addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),file=f.get('proof'),campaignId=f.get('campaign_id');if(!file||!file.size){toast('Choose a screenshot first.');return;}if(file.size>5*1024*1024){toast('Screenshot must be 5 MB or smaller.');return;}const ext=file.name.split('.').pop().toLowerCase();if(!['jpg','jpeg','png','webp'].includes(ext)){toast('Use JPG, PNG or WEBP.');return;}const path=`${currentUser.id}/${crypto.randomUUID()}.${ext}`;const {error:upErr}=await client.storage.from('proof-screenshots').upload(path,file,{contentType:file.type,upsert:false});if(upErr){toast(upErr.message);return;}const campaign=campaigns.find(c=>c.id===campaignId);const {error}=await client.from('submissions').insert({campaign_id:campaignId,user_id:currentUser.id,screenshot_path:path,claimed_views:Number(f.get('claimed_views')),rate_per_view:campaign?.rate_per_view||0});if(error){toast(error.message);return;}toast('Screenshot submitted for verification.');await renderDashboard();});
     $('#withdrawForm')?.addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const amount=Number(f.get('amount'));if(!Number.isFinite(amount)||amount<1000){toast('The minimum withdrawal request is KSh 1,000.');return;}if(amount>availableBalance){toast('Your request exceeds your available approved balance of '+money(availableBalance)+'.');return;}const {error}=await client.from('withdrawals').insert({user_id:currentUser.id,amount,method:f.get('method'),destination:String(f.get('destination')).trim()});if(error){toast(error.message);return;}toast('Withdrawal request submitted.');await renderDashboard();});
@@ -202,12 +212,7 @@
     ];
     const pendingPaymentCount=payments.filter(p=>p.status==='pending').length;
      $('#adminPanels').innerHTML='<div class="admin-payment-shortcut"><div><span class="eyebrow">ACTION REQUIRED</span><strong>Payment verification</strong><small>'+pendingPaymentCount+' payment(s) awaiting review</small></div><button type="button" class="btn" data-admin-tab="payments">Open payment verification <span aria-hidden="true">↗</span></button></div><div class="admin-shell"><nav class="admin-nav" aria-label="Admin modules">'+adminModules.map((m,i)=>'<button type="button" class="admin-nav-item '+(i===0?'active':'')+'" data-admin-tab="'+m.id+'"><span>'+m.icon+'</span>'+m.label+(m.id==='payments'&&pendingPaymentCount?' <b class="nav-count">'+pendingPaymentCount+'</b>':'')+'</button>').join('')+'</nav><div class="admin-workspace">'+adminModules.map((m,i)=>'<section class="admin-module '+(i===0?'':'hidden')+'" data-admin-module="'+m.id+'"><div class="admin-module-heading"><p class="eyebrow">GMA ADMINISTRATION</p><h3>'+m.label+'</h3></div><div class="dashboard-grid">'+m.html+'</div></section>').join('')+'</div></div>';
-    $$('[data-admin-tab]').forEach(button=>button.addEventListener('click',()=>{
-      const target=button.dataset.adminTab;
-      $$('[data-admin-tab]').forEach(x=>x.classList.toggle('active',x===button));
-      $$('[data-admin-module]').forEach(section=>section.classList.toggle('hidden',section.dataset.adminModule!==target));
-      button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-    }));
+    // Admin navigation is handled by the document-level delegate.
     const bindAnalytics=()=>{$('#analyticsRange')?.addEventListener('change',e=>{const section=$('[data-admin-module="analytics"]');const target=section?.querySelector('.dashboard-grid');if(target)target.innerHTML=card('Platform performance',analyticsPanel(e.target.value));bindAnalytics();});$('#analyticsExport')?.addEventListener('click',()=>{const days=analyticsRangeDays($('#analyticsRange')?.value||'30'),cutoff=days?Date.now()-days*86400000:0,records=[['Category','Date','Record','Status','Amount KSh']];const add=(kind,items,label,statusField,amountField)=>items.filter(x=>new Date(x.created_at).getTime()>=cutoff).forEach(x=>records.push([kind,new Date(x.created_at).toISOString(),label(x),statusField?x[statusField]:'',amountField?Number(x[amountField]||0):'']));add('Member',users,x=>x.full_name,'status');add('Campaign',campaigns,x=>x.title,'active');add('Payment',payments,x=>x.payment_reference,'status','amount');add('Submission',subs,x=>x.campaign_id,'status','approved_views');add('Withdrawal',withdrawals,x=>x.method+' · '+x.destination,'status','amount');add('Referral',refs,x=>x.referred_user_id,'eligible','bonus');const csv=records.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='gma-analytics-report.csv';a.click();URL.revokeObjectURL(url);});};
     bindAnalytics();
     const campaignDialog=$('#campaignEditDialog');
