@@ -30,6 +30,7 @@ grant select, insert on public.campaign_assignments to authenticated;
 grant select, insert, update on public.submissions to authenticated;
 grant select, update on public.referrals to authenticated;
 grant select, insert, update on public.withdrawals to authenticated;
+grant update (read_at) on public.notifications to authenticated;
 revoke update on public.campaign_assignments from authenticated;
 grant update(downloaded_at) on public.campaign_assignments to authenticated;
 alter default privileges in schema public revoke all on tables from anon, authenticated;
