@@ -47,6 +47,37 @@
     $('#footerRegister').classList.toggle('hidden', authenticated);
   };
   const goAuth = (mode='register') => { $('#auth').scrollIntoView({behavior:'smooth'}); if(mode==='login') $('#loginForm input').focus(); else $('#registerForm input').focus(); };
+  // Read referral links before registration so the code is ready when the form opens.
+  const referralFromUrl = new URLSearchParams(window.location.search).get('ref');
+  const referralInput = $('#registerForm [name="referral_code"]');
+  if (referralInput && referralFromUrl) {
+    referralInput.value = referralFromUrl.trim().slice(0,32);
+    referralInput.setAttribute('readonly','readonly');
+    const referralLabel = referralInput.closest('label');
+    if (referralLabel) {
+      const hint = document.createElement('small');
+      hint.textContent = 'Referral code applied automatically from your invitation link.';
+      referralLabel.appendChild(hint);
+    }
+  }
+  document.addEventListener('click', async event => {
+    const copyButton = event.target.closest('[data-copy-referral]');
+    const shareButton = event.target.closest('[data-share-referral]');
+    if (!copyButton && !shareButton) return;
+    const link = $('#gmaReferralLink')?.value;
+    if (!link) { toast('Your referral link is not ready yet.'); return; }
+    if (shareButton && navigator.share) {
+      try { await navigator.share({title:'Join Global Marketing Agency',text:'Sign up to Global Marketing Agency using my referral link:',url:link}); }
+      catch (error) { if (error.name !== 'AbortError') toast('Could not open the share menu.'); }
+      return;
+    }
+    try {
+      if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(link);
+      else { const field=$('#gmaReferralLink'); field.focus(); field.select(); document.execCommand('copy'); }
+      toast('Referral link copied. Share it with your friends!');
+    } catch (error) { toast('Copy failed. Select and copy the referral link manually.'); }
+  });
+
   setAuthVisibility(false);
   $('#navRegister').onclick=()=>goAuth('register'); $('#heroRegister').onclick=()=>goAuth('register'); $('#navLogin').onclick=()=>goAuth('login');
 
@@ -125,7 +156,7 @@
       {id:'campaigns',label:'Campaigns',icon:'◈',html:card('Available campaigns',campaignBody)},
       {id:'proof',label:'Submit Proof',icon:'↑',html:card('Submit campaign proof',subForm)},
       {id:'submissions',label:'My Submissions',icon:'✓',html:card('My submissions',list(subs,x=>item('Claimed '+x.claimed_views+' views · approved '+x.approved_views,'Campaign '+x.campaign_id+' · submitted '+new Date(x.created_at).toLocaleString(),x.status,x.reviewer_note?'<small>Review note: '+safe(x.reviewer_note)+'</small>':'')))},
-      {id:'referrals',label:'Referrals',icon:'↗',html:card('Your referral activity','<p>Your referral code: <b>'+safe(refCode)+'</b></p><p>Share your code with people who genuinely want to participate. A KSh 25 referral bonus is considered only when eligibility rules are satisfied and admin approves it.</p>'+list(refs,r=>item('Referral bonus '+money(r.bonus),'Referred user '+r.referred_user_id,r.paid?'paid':r.eligible?'approved':'pending')))},
+      {id:'referrals',label:'Referrals',icon:'↗',html:card('Your referral activity','<p>Your referral code: <b>'+safe(refCode)+'</b></p><p>Share your personal link. Anyone who registers through it will have your referral code filled in automatically.</p><label>Your personal referral link<input id="gmaReferralLink" type="text" readonly value="'+safe(location.origin+location.pathname+'?ref='+encodeURIComponent(refCode==='being generated'?'':refCode))+'" aria-label="Your personal referral link"></label><div class="row-actions"><button class="btn small" type="button" data-copy-referral>Copy referral link</button><button class="btn small" type="button" data-share-referral>Share link</button></div><p class="muted">A KSh 25 referral bonus is considered only when eligibility rules are satisfied and admin approves it.</p>'+list(refs,r=>item('Referral bonus '+money(r.bonus),'Referred user '+r.referred_user_id,r.paid?'paid':r.eligible?'approved':'pending')))},
       {id:'withdrawals',label:'Withdrawals',icon:'⇄',html:card('Withdrawal requests','<p class="muted">Minimum withdrawal: <strong>KSh 1,000</strong>. Requests are checked against your available approved balance.</p><form id="withdrawForm"><label>Amount (KSh)<input type="number" name="amount" min="1000" step="1" max="'+Math.floor(availableBalance)+'" required placeholder="Minimum 1000"></label><label>Payment method<select name="method"><option>M-Pesa</option><option>Bank transfer</option></select></label><label>Destination phone/account<input name="destination" required maxlength="120"></label><button class="btn" type="submit" '+(availableBalance<1000?'disabled':'')+'>Request withdrawal</button></form>'+list(withdrawals,w=>item(money(w.amount),w.method+' · '+w.destination+' · '+new Date(w.created_at).toLocaleString(),w.status)))},
       {id:'notifications',label:'Notifications'+(unreadCount?' ('+unreadCount+')':''),icon:'●',html:card('Your notifications','<div class="row-actions"><button class="btn small" type="button" id="markAllNotifications" '+(unreadCount?'':'disabled')+'>Mark all as read</button></div>'+notificationList)},
       {id:'payment',label:'Registration Payment',icon:'₭',html:card('Registration payment',paymentForm+list(payments,p=>item(money(p.amount)+' · '+p.method,'Reference '+p.payment_reference+' · '+new Date(p.created_at).toLocaleString(),p.status)))},
