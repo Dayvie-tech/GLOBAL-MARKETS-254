@@ -278,7 +278,8 @@ body.gma-authenticated .admin-nav{scrollbar-width:none;-webkit-overflow-scrollin
 body.gma-authenticated .member-nav::-webkit-scrollbar,
 body.gma-authenticated .admin-nav::-webkit-scrollbar{display:none}
 body.gma-authenticated .member-nav-item,
-body.gma-authenticated .admin-nav-item{scroll-snap-align:center;touch-action:pan-x}
+body.gma-authenticated .admin-nav-item{scroll-snap-align:center;touch-action:manipulation}
+body.gma-authenticated .member-nav-item{pointer-events:auto;position:relative;z-index:1}
 body.gma-authenticated .member-module,
 body.gma-authenticated .admin-module{animation:gmaPanelIn .18s ease-out}
 @keyframes gmaPanelIn{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
